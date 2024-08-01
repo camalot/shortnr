@@ -45,18 +45,43 @@ http://en.wikipedia.org/wiki/URL_shortening
 }
 ```
 
+#### SHORTEN RESPONSE
+
+> [!NOTE]  
+> `https://s.hort.er/` is an example domain. I do not know if it exists, or if it is even a TLD that is available
+
+``` jsonc
+{
+    "id": "5Un9Yv", // the short id
+    "target": "https://google.com/", // the short target
+    "url": "https://s.hort.er/5Un9Yv", // the short redirect endpoint 
+    "urls": [ // array of redirect endpoints
+        "https://s.hort.er/5Un9Yv",
+        "https://s.hort.er/g/5Un9Yv",
+        "https://s.hort.er/go/5Un9Yv"
+    ],
+    "new": false // indicates if this short was created with this request, or if it already existed.
+}
+```
+
 ### REDIRECT
 
 | METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION |
 | --- | --- | --- | --- |
-| `GET` | `/:hash` | Redirect to the original URL | `false` |
-| `GET` | `/g/:hash` | Redirect to the original URL | `false` |
-| `GET` | `/go/:hash` | Redirect to the original URL | `false` |
+| `GET` | `/:id` | Redirect to the original URL | `false` |
+| `GET` | `/g/:id` | Redirect to the original URL | `false` |
+| `GET` | `/go/:id` | Redirect to the original URL | `false` |
 
 #### REDIRECT PAYLOAD
 
 ``` json
 null
+```
+
+#### REDIRECT RESPONSE
+
+``` json
+redirect(target, 301)
 ```
 
 ### STATS
@@ -90,6 +115,14 @@ null
 ``` json
 {
   "name": "My CLI Token"
+}
+```
+
+#### TOKEN CREATE RESPONSE
+
+``` json
+{
+  "token": "kRuCYY9WArKYxhBo9HbJQfFGoiNhd4EdNK6w"
 }
 ```
 
