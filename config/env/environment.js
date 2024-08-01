@@ -21,17 +21,34 @@ function buildMongoUrl() {
   return 'mongodb://localhost:27017/admin';
 }
 
+let token_required = false;
+if (process.env.NUS_TOKEN_REQUIRED === undefined || process.env.NUS_TOKEN_REQUIRED.toLowerCase() !== 'false') {
+  token_required = true;
+}
+
+let token_create = false;
+if (process.env.NUS_ENABLE_TOKEN_CREATE === undefined || process.env.NUS_ENABLE_TOKEN_CREATE.toLowerCase() !== 'false') {
+  token_create = true;
+}
+
 module.exports = {
   mongo: {
-    url: process.env.NUS_MONGODB_URL || 'mongodb://localhost:27017/admin',
+    url: buildMongoUrl(),
     database: process.env.NUS_MONGO_DATABASE || 'shortener_dev',
   },
   webhost: process.env.NUS_WEBHOST_URL || 'http://localhost:3000',
-  tokens: {
-    create: {
-      enabled: process.env.NUS_ENABLE_TOKEN_CREATE || false,
+  short: {
+    length: {
+      min: parseInt(process.env.NUS_SHORT_ID_MIN_LENGTH) || 6,
+      max: parseInt(process.env.NUS_SHORT_ID_MAX_LENGTH) || 12
     }
-,    required: process.env.NUS_TOKEN_REQUIRED || true
+  },
+  tokens: {
+    prefix: process.env.NUS_TOKEN_PREFIX || 'nus_',
+    length: parseInt(process.env.NUS_TOKEN_LENGTH) || 36,
+    create: {
+      enabled: token_create,
+    },
+    required: token_required
   }
-
 };

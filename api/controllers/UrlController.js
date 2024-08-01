@@ -4,6 +4,9 @@ const config = require('../../config/env');
 const UrlsMongoClient = require('../mongo/Urls');
 const TokensMongoClient = require('../mongo/Tokens');
 const TrackingMongoClient = require('../mongo/Tracking');
+const LogsMongoClient = require('../mongo/Logs');
+
+const logger = new LogsMongoClient();
 
 async function verifyToken(token) {
   if (!config.tokens.create.enabled) {
@@ -46,13 +49,13 @@ function shorten(req, res) {
         ],
         new: isNew,
       };
-      Tracking.create(req, { action: 'shorten', ...output });
+      await Tracking.create(req, { action: 'shorten', ...output });
       return res.status(200).json(output);
     }
-
+    await logger.warn('UrlController.shorten', 'Invalid shorten payload.');
     return res.status(400).json({ error: 'Invalid shorten payload.' });
-  }).catch((err) => {
-    console.log(err);
+  }).catch(async (err) => {
+    await logger.error('UrlController.shorten', err);
     return res.status(403).json({ error: 'Invalid token provided.' });
   });
 }
@@ -67,7 +70,9 @@ function redirect(req, res) {
       Tracking.create(req, { action: 'redirect', ...short });
       return res.redirect(short.target_url);
     }
-    return res.status(404);
+
+    logger.warn('UrlController.redirect', `Short url not found: ${id}`);
+    return res.status(404).end();
   });
 }
 

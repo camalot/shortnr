@@ -81,7 +81,7 @@ null
 #### REDIRECT RESPONSE
 
 ``` json
-redirect(target, 301)
+res.redirect(target, 301);
 ```
 
 ### STATS
@@ -122,6 +122,8 @@ null
 
 ``` json
 {
+  "id": "66ac00909a84987ad753ab0d",
+  "name": "My CLI Token",
   "token": "kRuCYY9WArKYxhBo9HbJQfFGoiNhd4EdNK6w"
 }
 ```

@@ -48,15 +48,17 @@ class TokensMongoClient {
       await this.connect();
       const collection = this.db.collection(this.collection);
       if (id) {
-        const objectId = ObjectId.createFromHexString(id);
-        const result = await collection.deleteOne({ _id: objectId, token });
-        if (result.acknowledged) {
+        const oid = ObjectId.createFromHexString(id);
+        const filter = { _id: oid, token };
+        const result = await collection.deleteOne(filter);
+        if (result.acknowledged && result.deletedCount > 0) {
           return true;
         }
         return false;
       }
       return false;
     } catch (err) {
+      console.error(err);
       return false;
     }
   }
@@ -65,17 +67,21 @@ class TokensMongoClient {
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
-      const token = randomizer.generate(36, 36);
+      const timestamp = Math.floor(Date.now() / 1000);
+      const genToken = randomizer.generate(config.tokens.length, config.tokens.length);
+      const token = `${config.tokens.prefix}${genToken}`;
       const result = await collection.insertOne({
         token,
         name,
         enabled: true,
+        created_at: timestamp,
       });
-      if (result.acknowledged) {
-        return { token, name };
+      if (result.acknowledged && result.insertedId) {
+        return { id: result.insertedId.toString(), token, name };
       }
       return null;
     } catch (err) {
+      console.error(err);
       return null;
     }
   }

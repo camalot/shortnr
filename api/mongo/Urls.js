@@ -46,7 +46,14 @@ class UrlsMongoClient {
       const target_url = url.replace(/\/$/, '');
 
       const collection = this.db.collection(this.collection);
-      let id = randomizer.generate(4, 8);
+      const min = config.short.length.min;
+      const max = config.short.length.max;
+      
+      // get current date and time in UTC unix timestamp
+      const timestamp = Math.floor(Date.now() / 1000);
+
+
+      let id = randomizer.generate(min, max);
       while (await this.findOne({ id }) !== null) {
         // verify if the id is unique
         let result = await this.findOne({ id});
@@ -55,14 +62,15 @@ class UrlsMongoClient {
           break;
         }
         console.log('id is not unique, generating new id');
-        id = randomizer.generate(4, 8);
+        id = randomizer.generate(min, max);
       };
 
       const result = await collection.insertOne({
         id,
         target_url,
+        created_at: timestamp,
       });
-      if (result.acknowledged) {
+      if (result.acknowledged && result.insertedId) {
         return { id, target_url };
       }
       return null;
