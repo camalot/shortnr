@@ -1,4 +1,5 @@
-const env = process.env.NODE_ENV || 'development';
-const config = require(`./${env}`);
+require('dotenv').config();
+
+const config = require('./environment');
 
 module.exports = config;

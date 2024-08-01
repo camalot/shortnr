@@ -7,10 +7,14 @@ const app = express();
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(express.static(path.join(path.resolve(), 'view')));
+//app.use(express.static(path.join(path.resolve(), 'view')));
+
+// app.get('/', (req, res) => {
+//   res.sendFile(path.join(path.resolve(), 'view/index.html'));
+// });
 
 app.get('/', (req, res) => {
-  res.sendFile(path.join(path.resolve(), 'view/index.html'));
+  res.sendStatus(404);
 });
 
 // Mount all routes on / path
