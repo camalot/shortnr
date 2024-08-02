@@ -22,5 +22,7 @@ function decode(str) {
   return decoded;
 }
 
-module.exports.encode = encode;
-module.exports.decode = decode;
+module.exports = {
+  encode, decode,
+};
+

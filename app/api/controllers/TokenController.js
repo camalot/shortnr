@@ -35,7 +35,7 @@ async function create(req, res) {
     await logger.warn('TokenController.create', 'Unable to generate token');
     return res.status(500).json({ error: 'Unable to generate token' });
   } catch (err) {
-    await logger.error('TokenController.create', err);
+    await logger.error('TokenController.create', err, err.stack);
     return res.status(500).json({ error: 'An error has occurred' });
   }
 }
@@ -61,7 +61,7 @@ async function destroy(req, res) {
     await logger.warn('TokenController.destroy', 'token not found');
     return res.status(404).json({ error: 'token not found' });
   } catch (err) {
-    await logger.error('TokenController.destroy', err);
+    await logger.error('TokenController.destroy', err, err.stack);
     return res.status(500).json({ error: 'An error has occurred' });
   }
 }

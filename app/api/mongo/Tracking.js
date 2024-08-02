@@ -1,5 +1,8 @@
 const { MongoClient } = require('mongodb');
 const config = require('../../config/env');
+const LogsMongoClient = require('./Logs');
+
+const logger = new LogsMongoClient();
 
 class TrackingMongoClient {
   constructor() {
@@ -57,7 +60,7 @@ class TrackingMongoClient {
       }
       return false;
     } catch (err) {
-      console.error(err);
+      await logger.error('TrackingMongoClient.create', err.message, err.stack);
       return false;
     }
   }

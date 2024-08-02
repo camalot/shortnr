@@ -1,5 +1,7 @@
-.btn:focus, .btn-shorten:focus{
-  outline: 0 !important;
+*:focus, *:hover {
+  outline: none !important;
+  -webkit-box-shadow: none !important;
+  box-shadow: none !important;
 }
 
 html,
@@ -14,20 +16,37 @@ body {
   font-family: 'Raleway', sans-serif;
 }
 
-.btn-shorten {
-  color: #ffffff;
-  background-color: #673ab7;
+.btn {
   border: none;
+  border-radius: 0;
+  padding: 10px 20px;
+  color: #ddd;
 }
 
-.btn-shorten:hover,
-.btn-shorten:focus,
-.btn-shorten:active,
-.btn-shorten.active {
-  color: #ffffff;
-  background-color: #673ab7;
+.btn:hover,
+.btn:focus,
+.btn:active,
+.btn.active {
   border: none;
+  color: #fff;
 }
+
+.btn-shorten {
+  color: #ddd;
+  background-color: #673ab7;
+}
+
+.btn-shorten:hover, .btn-shorten:focus, .btn-shorten:active, .btn-shorten.active {
+  background-color: #522e92;
+}
+
+.btn-copy {
+}
+
+.btn-token {
+  background-color: #4caf50;
+}
+
 
 .site-wrapper {
   display: table;
@@ -82,6 +101,6 @@ body {
 
 @media (min-width: 992px) {
   .main-container {
-    width: 700px;
+    width: 800px;
   }
 }

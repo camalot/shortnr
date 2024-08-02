@@ -13,4 +13,4 @@ RUN npm install --omit=dev
 EXPOSE 3000
 
 # start the app
-CMD ["node", "index.js"]
+CMD ["node", "/app/bin/www"]

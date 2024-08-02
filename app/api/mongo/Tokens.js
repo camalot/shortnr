@@ -1,6 +1,9 @@
 const { MongoClient, ObjectId } = require('mongodb');
 const config = require('../../config/env');
-const randomizer = require('../helpers/rand_id');
+const randomizer = require('../helpers/randomizer');
+const LogsMongoClient = require('./Logs');
+
+const logger = new LogsMongoClient();
 
 class TokensMongoClient {
   constructor() {
@@ -23,7 +26,7 @@ class TokensMongoClient {
   async valid(token) {
     try {
       if (!config.tokens.required) {
-        console.log('Token not required: returning true');
+        await logger.debug('TokensMongoClient.valid', 'Token not required: returning true');
         return true;
       }
 
@@ -39,6 +42,7 @@ class TokensMongoClient {
 
       return false;
     } catch (err) {
+      await logger.error('TokensMongoClient.valid', err.message, err.stack);
       return false;
     }
   }
@@ -58,7 +62,7 @@ class TokensMongoClient {
       }
       return false;
     } catch (err) {
-      console.error(err);
+      await logger.error('TokensMongoClient.destroy', err.message, err.stack);
       return false;
     }
   }
@@ -81,7 +85,7 @@ class TokensMongoClient {
       }
       return null;
     } catch (err) {
-      console.error(err);
+      await logger.error('TokensMongoClient.create', err.message, err.stack);
       return null;
     }
   }
@@ -101,6 +105,7 @@ class TokensMongoClient {
 
       return null;
     } catch (err) {
+      await logger.error('TokensMongoClient.get', err.message, err.stack);
       return null;
     }
   }
@@ -117,6 +122,7 @@ class TokensMongoClient {
       }
       return null;
     } catch (err) {
+      await logger.error('TokensMongoClient.findOne', err.message, err.stack);
       return null;
     }
   }

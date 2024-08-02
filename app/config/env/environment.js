@@ -37,7 +37,18 @@ if (process.env.NUS_ENABLE_TOKEN_CREATE === undefined || process.env.NUS_ENABLE_
   token_create = true;
 }
 
+let ui_enabled = false;
+if (process.env.NUS_UI_ENABLED === undefined || process.env.NUS_UI_ENABLED.toLowerCase() !== 'false') {
+  ui_enabled = true;
+}
+
 module.exports = {
+  log: {
+    level: {
+      db: (process.env.NUS_LOG_LEVEL || 'WARN').toUpperCase(),
+      console: (process.env.NUS_LOG_LEVEL_CONSOLE || 'DEBUG').toUpperCase(),
+    },
+  },
   mongo: {
     url: buildMongoUrl(),
     database: process.env.NUS_MONGO_DATABASE || 'shortener_dev',
@@ -48,6 +59,9 @@ module.exports = {
       min: parseInt(process.env.NUS_SHORT_ID_MIN_LENGTH) || 6,
       max: parseInt(process.env.NUS_SHORT_ID_MAX_LENGTH) || 12
     }
+  },
+  ui: {
+    enabled: ui_enabled,
   },
   tokens: {
     prefix: process.env.NUS_TOKEN_PREFIX || 'nus_',

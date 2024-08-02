@@ -1,7 +1,10 @@
 const { MongoClient } = require('mongodb');
 const config = require('../../config/env');
-const randomizer = require('../helpers/rand_id');
+const randomizer = require('../helpers/randomizer');
 const TokensMongoClient = require('./Tokens');
+const LogsMongoClient = require('./Logs');
+
+const logger = new LogsMongoClient();
 
 class UrlsMongoClient {
   constructor() {
@@ -35,6 +38,7 @@ class UrlsMongoClient {
 
       return null;
     } catch (err) {
+      await logger.error('UrlsMongoClient.get', err.message, err.stack);
       return null;
     }
   }
@@ -68,10 +72,9 @@ class UrlsMongoClient {
         // verify if the id is unique
         let result = await this.findOne({ id});
         if (!result) {
-          console.log('id is unique');
           break;
         }
-        console.log('id is not unique, generating new id');
+        await logger.debug('UrlsMongoClient.create', 'id is not unique, generating new id');
         id = randomizer.generate(min, max);
       };
 
@@ -82,10 +85,11 @@ class UrlsMongoClient {
         created_by: tokenId || 'anonymous',
       });
       if (result.acknowledged && result.insertedId) {
-        return { id, target_url };
+        return { id, target_url, created_by: tokenId || 'anonymous' };
       }
       return null;
     } catch (err) {
+      await logger.error('UrlsMongoClient.create', err.message, err.stack);
       return null;
     }
   }
@@ -95,9 +99,13 @@ class UrlsMongoClient {
       await this.connect();
       const collection = this.db.collection(this.collection);
       const result = await collection.findOne(query);
+      if (!result) {
+        return null;
+      }
       delete result._id;
       return result;
     } catch (err) {
+      await logger.error('UrlsMongoClient.findOne', err.message, err.stack);
       return null;
     }
   }

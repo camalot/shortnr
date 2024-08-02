@@ -1,5 +1,3 @@
-// const Url = require('../models/Url');
-// const base58 = require('../helpers/base58');
 const config = require('../../config/env');
 const UrlsMongoClient = require('../mongo/Urls');
 const TokensMongoClient = require('../mongo/Tokens');
@@ -56,14 +54,17 @@ async function shorten(req, res) {
           `${config.webhost}/go/${short.id}`,
         ],
         new: isNew,
+        created_by: short.created_by,
       };
+      await logger.debug(JSON.stringify(output));
       await Tracking.create(req, { action: 'shorten', ...output });
+      delete output.created_by;
       return res.status(200).json(output);
     }
     await logger.warn('UrlController.shorten', 'Invalid shorten payload.');
     return res.status(400).json({ error: 'Invalid shorten payload.' });
   } catch (err) {
-    await logger.error('UrlController.shorten', err);
+    await logger.error('UrlController.shorten', err, err.stack);
     return res.status(500).json({ error: 'Internal server error.' });
   }
 }
