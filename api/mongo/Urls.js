@@ -1,6 +1,7 @@
 const { MongoClient } = require('mongodb');
 const config = require('../../config/env');
 const randomizer = require('../helpers/rand_id');
+const TokensMongoClient = require('./Tokens');
 
 class UrlsMongoClient {
   constructor() {
@@ -38,9 +39,18 @@ class UrlsMongoClient {
     }
   }
 
-  async create(url) {
+  async create(url, token) {
     try {
       await this.connect();
+      let tokenId = null;
+      if (token) {
+        const tokenClient = new TokensMongoClient();
+        const tokenResult = await tokenClient.findOne({ token });
+        if (!tokenResult) {
+          throw new Error('Unable to find token');
+        }
+        tokenId = tokenResult.id;
+      }
 
       // clean the url by removing trailing slash
       const target_url = url.replace(/\/$/, '');
@@ -69,6 +79,7 @@ class UrlsMongoClient {
         id,
         target_url,
         created_at: timestamp,
+        created_by: tokenId || 'anonymous',
       });
       if (result.acknowledged && result.insertedId) {
         return { id, target_url };

@@ -28,6 +28,15 @@ http://en.wikipedia.org/wiki/URL_shortening
 > [!IMPORTANT]  
 > If `env.NUS_TOKEN_REQUIRED` is `true` then `headers['x-access-token']` MUST contain a token that exists in `mongodb.shortener.tokens`
 
+### HEALTH
+
+The health endpoint.
+
+| METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION |
+| --- | --- | --- | --- |
+| `GET` | `/health` | The health endpoint | `false` |
+
+
 ### SHORTEN
 
 > [!NOTE]  

@@ -17,11 +17,13 @@ async function verifyToken(token) {
   return valid;
 }
 
-function shorten(req, res) {
-  // get the authentication token from the request
-  const token = req.headers['x-access-token'];
-  verifyToken(token).then(async (valid) => {
+async function shorten(req, res) {
+  try {
+    // get the authentication token from the request
+    const token = req.headers['x-access-token'];
+    const valid = await verifyToken(token);
     if (!valid) {
+      await logger.warn('UrlController.shorten', 'Invalid token provided.');
       return res.status(403).json({ error: 'Invalid token provided.' });
     }
     const Url = new UrlsMongoClient();
@@ -34,9 +36,15 @@ function shorten(req, res) {
       let isNew = false;
       if (!short) {
         // Since it doesn't exist, let's go ahead and create it
-        short = await Url.create(targetUrl);
+        short = await Url.create(targetUrl, token);
         isNew = true;
       }
+
+      if (!short) {
+        await logger.warn('UrlController.shorten', 'Invalid shorten payload.');
+        return res.status(500).json({ error: 'Invalid shorten payload.' });
+      }
+
       // If the url already exists, return the existing short url
       const output = {
         id: short.id,
@@ -54,10 +62,10 @@ function shorten(req, res) {
     }
     await logger.warn('UrlController.shorten', 'Invalid shorten payload.');
     return res.status(400).json({ error: 'Invalid shorten payload.' });
-  }).catch(async (err) => {
+  } catch (err) {
     await logger.error('UrlController.shorten', err);
-    return res.status(403).json({ error: 'Invalid token provided.' });
-  });
+    return res.status(500).json({ error: 'Internal server error.' });
+  }
 }
 
 function redirect(req, res) {

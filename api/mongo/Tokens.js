@@ -110,8 +110,12 @@ class TokensMongoClient {
       await this.connect();
       const collection = this.db.collection(this.collection);
       const result = await collection.findOne(query);
-      delete result._id;
-      return result;
+      if (result) {
+        result.id = result._id.toString();
+        delete result._id;
+        return result;
+      }
+      return null;
     } catch (err) {
       return null;
     }
