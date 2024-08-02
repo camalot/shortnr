@@ -3,7 +3,6 @@ const urlRoutes = require('./url');
 const tokenRoutes = require('./token');
 const statsRoutes = require('./stats');
 const config = require('../env/environment');
-const { use } = require('chai');
 
 const router = express.Router();
 

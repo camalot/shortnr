@@ -8,7 +8,7 @@ COPY ./app /app
 WORKDIR /app
 
 # install the dependencies
-RUN npm install --production
+RUN npm install --omit=dev
 
 EXPOSE 3000
 
