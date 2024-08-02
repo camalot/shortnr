@@ -69,20 +69,19 @@ async function shorten(req, res) {
   }
 }
 
-function redirect(req, res) {
+async function redirect(req, res) {
   const Url = new UrlsMongoClient();
   const Tracking = new TrackingMongoClient();
   const { id } = req.params;
-  // Check if url already exists in the database
-  return Url.get(id).then((short) => {
-    if (short) {
-      Tracking.create(req, { action: 'redirect', ...short });
-      return res.redirect(short.target_url);
-    }
 
-    logger.warn('UrlController.redirect', `Short url not found: ${id}`);
-    return res.status(404).end();
-  });
+  const short = await Url.get(id);
+  if (short) {
+    await Tracking.create(req, { action: 'redirect', ...short });
+    return res.redirect(short.target_url);
+  }
+
+  await logger.warn('UrlController.redirect', `Short url not found: ${id}`);
+  return res.status(404).end();
 }
 
 module.exports = {
