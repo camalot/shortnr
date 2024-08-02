@@ -57,7 +57,7 @@ async function shorten(req, res) {
         created_by: short.created_by,
       };
       await logger.debug(JSON.stringify(output));
-      await Tracking.create(req, { action: 'shorten', ...output });
+      await Tracking.create(req, { action: 'url.shorten', ...output });
       delete output.created_by;
       return res.status(200).json(output);
     }
@@ -76,7 +76,7 @@ async function redirect(req, res) {
 
   const short = await Url.get(id);
   if (short) {
-    await Tracking.create(req, { action: 'redirect', ...short });
+    await Tracking.create(req, { action: 'url.redirect', ...short });
     return res.redirect(short.target_url);
   }
 

@@ -28,7 +28,7 @@ async function create(req, res) {
     }
     const result = await token.create(name);
     if (result) {
-      await track.create(req, { action: 'create', token: { name: result.name, id: result.id } });
+      await track.create(req, { action: 'token.create', token: { name: result.name, id: result.id } });
       return res.status(200).json({ id: result.id, name: result.name, token: result.token });
     }
 
@@ -45,6 +45,7 @@ async function destroy(req, res) {
     if (!config.tokens.create.enabled) {
       return res.status(404).end();
     }
+    const track = new TrackingMongoClient();
 
     const tokens = new TokensMongoClient();
     const { id } = req.params;
@@ -56,6 +57,7 @@ async function destroy(req, res) {
     }
     const result = await tokens.destroy(id, token);
     if (result) {
+      await track.create(req, { action: 'token.destroy', token: { id } });
       return res.status(204).end();
     }
     await logger.warn('TokenController.destroy', 'token not found');
