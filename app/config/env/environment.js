@@ -1,31 +1,29 @@
 
+function stripQuotes(str) {
+  return str.replace(/^"(.*)"$/, '$1');
+}
+
 function buildMongoUrl() {
-  const mUrl = (process.env.NUS_MONGODB_URL || '').replace(/^"(.*)"$/, '$1');
+  const mUrl = stripQuotes(process.env.NUS_MONGODB_URL || '');
   if (mUrl) {
-    console.log(`Using provided MongoDB URL: ${mUrl}`);
     return mUrl;
   } else {
-    const host = (process.env.NUS_MONGODB_HOST || 'localhost').replace(/^"(.*)"$/, '$1');
-    const port = (process.env.NUS_MONGODB_PORT || '27017').replace(/^"(.*)"$/, '$1');
-    const user = (process.env.NUS_MONGODB_USERNAME || '').replace(/^"(.*)"$/, '$1');
-    const pass = (process.env.NUS_MONGODB_PASSWORD || '').replace(/^"(.*)"$/, '$1');
-    const authSource = (process.env.NUS_MONGODB_AUTHSOURCE || 'admin').replace(/^"(.*)"$/, '$1');
+    const host = stripQuotes(process.env.NUS_MONGODB_HOST || 'localhost');
+    const port = stripQuotes(process.env.NUS_MONGODB_PORT || '27017');
+    const user = stripQuotes(process.env.NUS_MONGODB_USERNAME || '');
+    const pass = stripQuotes(process.env.NUS_MONGODB_PASSWORD || '');
+    const authSource = stripQuotes(process.env.NUS_MONGODB_AUTHSOURCE || 'admin');
     let auth = '';
 
     if (host && port) {
       if (process.env.NUS_MONGODB_USERNAME && pass) {
         auth = `${user}:${pass}@`;
-        console.log(auth);
-      } else {
-        console.log("NO AUTH INFO FOR MONGODB");
-      }
+      } 
       const url = `mongodb://${auth}${host}:${port}/${authSource}`;
-      console.log(`Using constructed MongoDB URL: ${url}`);
       return url;
     }
   }
 
-  console.log('Using default MongoDB URL: mongodb://localhost:27017/admin');
   return 'mongodb://localhost:27017/admin';
 }
 
