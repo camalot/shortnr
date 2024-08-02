@@ -1,18 +1,6 @@
-# Node ES6 URL Shortener
-
-![](https://img.shields.io/badge/node-success-brightgreen.svg)
-![](https://img.shields.io/badge/test-success-brightgreen.svg)
-
-# Stack
-
-![](https://img.shields.io/badge/node_8-✓-blue.svg)
-![](https://img.shields.io/badge/ES6-✓-blue.svg)
-![](https://img.shields.io/badge/express-✓-blue.svg)
-![](https://img.shields.io/badge/sequelize-✓-blue.svg)
-
 # Introduction
 
-This is a fork of [murraco/node-url-shortener](https://github.com/murraco/node-url-shortener), with massive changes to fit my needs.
+This was a fork of [murraco/node-url-shortener](https://github.com/murraco/node-url-shortener), with massive changes to fit my needs.
 It is mongodb backed, versus mysql, and entirely REST based. There is no frontend views.
 
 ## What's a URL Shortener?
