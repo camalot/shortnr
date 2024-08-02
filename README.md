@@ -1,13 +1,11 @@
 # Introduction
 
 This was a fork of [murraco/node-url-shortener](https://github.com/murraco/node-url-shortener), with massive changes to fit my needs.
-It is mongodb backed, versus mysql, and entirely REST based. There is no frontend views.
+It is mongodb backed, versus MySQL, and entirely REST based. There is no frontend views.
 
 ## What's a URL Shortener?
 
- URL shortening is a technique to convert a long URL (site or page address) to a shorter version. This shorter version of the URL is usually cleaner and easier to share or remember. When someone accesses the shortened address, the browser redirects to the original (large) url address. It is also called URL redirection or URL redirect.
-
-http://en.wikipedia.org/wiki/URL_shortening
+ [URL shortening](http://en.wikipedia.org/wiki/URL_shortening) is a technique to convert a long URL (site or page address) to a shorter version. This shorter version of the URL is usually cleaner and easier to share or remember. When someone accesses the shortened address, the browser redirects to the original (large) URL address. It is also called URL redirection or URL redirect.
 
 ## API ENDPOINTS
 
@@ -23,7 +21,6 @@ The health endpoint.
 | METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION |
 | --- | --- | --- | --- |
 | `GET` | `/health` | The health endpoint | `false` |
-
 
 ### SHORTEN
 
@@ -86,7 +83,6 @@ res.redirect(target, 301);
 > [!NOTE]  
 > Authentication only required if `env.NUS_TOKEN_REQUIRED == true`
 
-
 | METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION |
 | --- | --- | --- | --- |
 | `GET` | `/api/stats/:hash` | Get statistics of the shortened URL | `true?` |
@@ -99,7 +95,6 @@ null
 
 > [!NOTE]  
 > `Token` endpoints are only available if `env.NUS_ENABLE_TOKEN_CREATE == true`
-
 
 ### TOKEN CREATE
 
@@ -121,7 +116,7 @@ null
 {
   "id": "66ac00909a84987ad753ab0d",
   "name": "My CLI Token",
-  "token": "kRuCYY9WArKYxhBo9HbJQfFGoiNhd4EdNK6w"
+  "token": "kRuCYY9WArKYxhBo9HbJQfFGoiNhd4EdNK6w" // gitleaks:allow
 }
 ```
 
