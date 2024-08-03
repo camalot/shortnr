@@ -38,23 +38,23 @@ class UrlsMongoClient {
 
       return null;
     } catch (err) {
-      await logger.error('UrlsMongoClient.get', err.message, err.stack);
+      await logger.error('UrlsMongoClient.get', err.message, { stack: err.stack });
       return null;
     }
   }
 
-  async create(url, token) {
+  async create(url, tokenId) {
     try {
       await this.connect();
-      let tokenId = null;
-      if (token) {
-        const tokenClient = new TokensMongoClient();
-        const tokenResult = await tokenClient.findOne({ token });
-        if (!tokenResult) {
-          throw new Error('Unable to find token');
-        }
-        tokenId = tokenResult.id;
-      }
+      // let tokenId = null;
+      // if (token) {
+      //   const tokenClient = new TokensMongoClient();
+      //   const tokenResult = await tokenClient.findOne({ token });
+      //   if (!tokenResult) {
+      //     throw new Error('Unable to find token');
+      //   }
+      //   tokenId = tokenResult.id;
+      // }
 
       // clean the url by removing trailing slash
       const target_url = url.replace(/\/$/, '');
@@ -89,7 +89,7 @@ class UrlsMongoClient {
       }
       return null;
     } catch (err) {
-      await logger.error('UrlsMongoClient.create', err.message, err.stack);
+      await logger.error('UrlsMongoClient.create', err.message, { stack: err.stack });
       return null;
     }
   }
@@ -105,7 +105,7 @@ class UrlsMongoClient {
       delete result._id;
       return result;
     } catch (err) {
-      await logger.error('UrlsMongoClient.findOne', err.message, err.stack);
+      await logger.error('UrlsMongoClient.findOne', err.message, { stack: err.stack });
       return null;
     }
   }

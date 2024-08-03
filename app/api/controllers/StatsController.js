@@ -1,4 +1,3 @@
-const config = require('../../config/env');
 const StatsMongoClient = require('../mongo/Stats');
 const LogsMongoClient = require('../mongo/Logs');
 
@@ -6,27 +5,35 @@ const logger = new LogsMongoClient();
 
 async function stats(req, res) {
   try {
-    Stats = new StatsMongoClient();
+    const Stats = new StatsMongoClient();
     const results = await Stats.getRedirectCounts();
 
     return res.status(200).json(results);
   } catch (err) {
-    await logger.error('StatsController.stats', { error: err.message });
-    return res.status(500).json({ error: 'Internal Server Error' });
+    await logger.error(
+      'StatsController.stats', 
+      err.message, 
+      { stack: err.stack, headers: req.headers, body: req.body, query: req.query, params: req.params },
+    );
+    return res.status(500).end();
   }
 }
 
 async function statsById(req, res) {
   try {
-    Stats = new StatsMongoClient();
+    const Stats = new StatsMongoClient();
 
     const id = req.params.id;
     const results = await Stats.getRedirectCountsForShort(id);
 
     return res.status(200).json(results);
   } catch (err) {
-    await logger.error('StatsController.statsById', err.message, err.stack);
-    return res.status(500).json({ error: 'Internal Server Error' });
+    await logger.error(
+      'StatsController.statsById', 
+      err.message, 
+      { stack: err.stack, headers: req.headers, body: req.body, query: req.query, params: req.params },
+    );
+    return res.status(500).end();
   }
 }
 
@@ -60,11 +67,14 @@ async function metrics(req, res) {
     });
 
     res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'close');
+    
     res.send(metrics.join('\n'));
 
     return res.status(200).end();
   } catch (err) {
-    await logger.error('StatsController.metrics', err.message, err.stack);
+    await logger.error('StatsController.metrics', err.message, { stack: err.stack });
     return res.status(500).end();
   }
 }

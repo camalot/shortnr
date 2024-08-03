@@ -72,7 +72,7 @@ $('.btn-token').on('click', () => {
     dataType: 'json',
     success(data) {
       localStorage.setItem('token', data.token);
-      $('#token').text(data.token);
+      $('#token').val(data.token);
     },
   });
 });

@@ -31,11 +31,11 @@ class StatsMongoClient {
   async getRedirectCountsForShort(id) {
     try {
       return this.getTrackingCountsByMatch([
-        { $match: { id, action: 'redirect' } }, 
+        { $match: { id, action: 'url.redirect' } }, 
         { $group: { _id: '$id', total: { $sum: 1 } } },
       ]);
     } catch (err) {
-      logger.error('StatsMongoClient.getRedirectCountsForShort', err.message, err.stack);
+      logger.error('StatsMongoClient.getRedirectCountsForShort', err.message, { stack: err.stack });
       return null;
     }
   }
@@ -43,11 +43,11 @@ class StatsMongoClient {
   async getRedirectCounts() {
     try {
       return this.getTrackingCountsByMatch([ 
-        { $match: { action: 'redirect' } },
+        { $match: { action: 'url.redirect' } },
         { $group: { _id: { id: '$id', token_id: { '$ifNull': ['$created_by', 'anonymous'] } }, total: { $sum: 1 } } }
       ]);
     } catch (err) {
-      await logger.error('StatsMongoClient.getRedirectCounts', err.message, err.stack);
+      await logger.error('StatsMongoClient.getRedirectCounts', err.message, { stack: err.stack });
       return null;
     }
   }
@@ -55,11 +55,11 @@ class StatsMongoClient {
   async getShortenCounts() {
     try {
       return this.getTrackingCountsByMatch([
-        { $match: { action: 'shorten', "new": true } },
+        { $match: { action: 'url.shorten', "new": true } },
         { $group: { _id: { token_id: { '$ifNull': [ '$created_by', 'anonymous' ] } }, total: { $sum: 1 } } },
       ]);
     } catch (err) {
-      await logger.error('StatsMongoClient.getRedirectCounts', err.message, err.stack);
+      await logger.error('StatsMongoClient.getRedirectCounts', err.message, { stack: err.stack });
       return null;
     }
   }
@@ -76,7 +76,7 @@ class StatsMongoClient {
       }
       return results;
     } catch (err) {
-      await logger.error('StatsMongoClient.getRedirectCounts', err.message, err.stack);
+      await logger.error('StatsMongoClient.getRedirectCounts', err.message, { stack: err.stack });
       return null;
     }
   }
@@ -90,7 +90,7 @@ class StatsMongoClient {
       ]).toArray();
       return results;
     } catch (err) {
-      await logger.error('StatsMongoClient.getRedirectCounts', err.message, err.stack);
+      await logger.error('StatsMongoClient.getRedirectCounts', err.message, { stack: err.stack });
       return null;
     }
   }
@@ -105,7 +105,7 @@ class StatsMongoClient {
       ]).toArray();
       return results;
     } catch (err) {
-      await logger.error('StatsMongoClient.getRedirectCounts', err.message, err.stack);
+      await logger.error('StatsMongoClient.getRedirectCounts', err.message, { stack: err.stack });
       return null;
     }
   }

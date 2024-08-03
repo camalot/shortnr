@@ -2,40 +2,35 @@ const config = require('../../config/env');
 const TokensMongoClient = require('../mongo/Tokens');
 const TrackingMongoClient = require('../mongo/Tracking');
 const LogsMongoClient = require('../mongo/Logs');
+const randomizer = require('../helpers/randomizer');
 
 const logger = new LogsMongoClient();
 
-async function verifyToken(token) {
-  const tokens = new TokensMongoClient();
-  const valid = tokens.valid(token);
-  return valid;
-}
-
 async function create(req, res) {
   try {
-    const track = new TrackingMongoClient();
+    const Track = new TrackingMongoClient();
 
     if (!config.tokens.create.enabled) {
-      await logger.warn('TokenController.create', 'Token creation is disabled, but request was made.');
+      await logger.warn('TokenController.create', 'Token creation is disabled, but request was made.', { headers: req.headers, body: req.body });
       return res.status(404).end();
     }
 
     const token = new TokensMongoClient();
-    const { name } = req.body;
+    let { name } = req.body;
     if (!name) {
-      await logger.warn('TokenController.create', 'Missing required field: name');
-      return res.status(400).json({ error: 'Name is required' });
+      await logger.debug('TokenController.create', 'Missing required field: name. Generating random name.', { headers: req.headers, body: req.body });
+      name = randomizer.generate(12,12);
     }
     const result = await token.create(name);
     if (result) {
-      await track.create(req, { action: 'token.create', token: { name: result.name, id: result.id } });
+      await Track.create(req, { action: 'token.create', token: { name: result.name, id: result.id } });
       return res.status(200).json({ id: result.id, name: result.name, token: result.token });
     }
 
-    await logger.warn('TokenController.create', 'Unable to generate token');
+    await logger.error('TokenController.create', 'Unable to generate token', { headers: req.headers, body: req.body });
     return res.status(500).json({ error: 'Unable to generate token' });
   } catch (err) {
-    await logger.error('TokenController.create', err, err.stack);
+    await logger.error('TokenController.create', err, { stack: err.stack, headers: req.headers, body: req.body });
     return res.status(500).json({ error: 'An error has occurred' });
   }
 }
@@ -45,25 +40,20 @@ async function destroy(req, res) {
     if (!config.tokens.create.enabled) {
       return res.status(404).end();
     }
-    const track = new TrackingMongoClient();
-
-    const tokens = new TokensMongoClient();
+    const Track = new TrackingMongoClient();
+    const Tokens = new TokensMongoClient();
     const { id } = req.params;
-    const token = req.headers['x-access-token'];
-    const valid = await verifyToken(token);
-    if (!valid) {
-      await logger.warn('TokenController.destroy', 'Invalid token provided.');
-      return res.status(403).json({ error: 'Invalid token provided.' });
-    }
-    const result = await tokens.destroy(id, token);
+    const token = res.locals.token ? res.locals.token.token : null;
+
+    const result = await Tokens.destroy(id, token);
     if (result) {
-      await track.create(req, { action: 'token.destroy', token: { id } });
+      await Track.create(req, { action: 'token.destroy', token: { id } });
       return res.status(204).end();
     }
     await logger.warn('TokenController.destroy', 'token not found');
     return res.status(404).json({ error: 'token not found' });
   } catch (err) {
-    await logger.error('TokenController.destroy', err, err.stack);
+    await logger.error('TokenController.destroy', err, { stack: err.stack });
     return res.status(500).json({ error: 'An error has occurred' });
   }
 }

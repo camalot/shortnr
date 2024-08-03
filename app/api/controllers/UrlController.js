@@ -1,31 +1,15 @@
-const config = require('../../config/env');
+const requests = require('../helpers/requests');
 const UrlsMongoClient = require('../mongo/Urls');
-const TokensMongoClient = require('../mongo/Tokens');
 const TrackingMongoClient = require('../mongo/Tracking');
 const LogsMongoClient = require('../mongo/Logs');
 
 const logger = new LogsMongoClient();
 
-async function verifyToken(token) {
-  if (!config.tokens.create.enabled) {
-    return true;
-  }
-  const tokens = new TokensMongoClient();
-  const valid = tokens.valid(token);
-  return valid;
-}
-
 async function shorten(req, res) {
   try {
-    // get the authentication token from the request
-    const token = req.headers['x-access-token'];
-    const valid = await verifyToken(token);
-    if (!valid) {
-      await logger.warn('UrlController.shorten', 'Invalid token provided.');
-      return res.status(403).json({ error: 'Invalid token provided.' });
-    }
     const Url = new UrlsMongoClient();
     const Tracking = new TrackingMongoClient();
+    const tokenId = res.locals.token ? res.locals.token.id : null;
 
     if (req.body.url) {
       const targetUrl = req.body.url.replace(/\/$/, '');
@@ -34,7 +18,7 @@ async function shorten(req, res) {
       let isNew = false;
       if (!short) {
         // Since it doesn't exist, let's go ahead and create it
-        short = await Url.create(targetUrl, token);
+        short = await Url.create(targetUrl, tokenId);
         isNew = true;
       }
 
@@ -43,15 +27,16 @@ async function shorten(req, res) {
         return res.status(500).json({ error: 'Invalid shorten payload.' });
       }
 
+      const sourceHost = requests.getSourceHost(req);
       // If the url already exists, return the existing short url
       const output = {
         id: short.id,
         target: short.target_url,
-        url: `${config.webhost}/${short.id}`,
+        url: `${sourceHost}/${short.id}`,
         urls: [
-          `${config.webhost}/${short.id}`,
-          `${config.webhost}/g/${short.id}`,
-          `${config.webhost}/go/${short.id}`,
+          `${sourceHost}/${short.id}`,
+          `${sourceHost}/g/${short.id}`,
+          `${sourceHost}/go/${short.id}`,
         ],
         new: isNew,
         created_by: short.created_by,
@@ -64,7 +49,7 @@ async function shorten(req, res) {
     await logger.warn('UrlController.shorten', 'Invalid shorten payload.');
     return res.status(400).json({ error: 'Invalid shorten payload.' });
   } catch (err) {
-    await logger.error('UrlController.shorten', err, err.stack);
+    await logger.error('UrlController.shorten', err, { stack: err.stack });
     return res.status(500).json({ error: 'Internal server error.' });
   }
 }

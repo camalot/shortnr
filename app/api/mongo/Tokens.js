@@ -29,12 +29,14 @@ class TokensMongoClient {
         await logger.debug('TokensMongoClient.valid', 'Token not required: returning true');
         return true;
       }
-
+      await logger.debug('TokensMongoClient.valid', 'Token required: checking token', { token });
       await this.connect();
       const collection = this.db.collection(this.collection);
       if (token) {
         const result = await collection.findOne({ token });
+        await logger.debug('TokensMongoClient.valid', 'FindOne result', { result });
         if (result) {
+          await logger.debug('TokensMongoClient.valid', 'Token found', { token });
           return result.enabled;
         }
         return false;
@@ -42,7 +44,7 @@ class TokensMongoClient {
 
       return false;
     } catch (err) {
-      await logger.error('TokensMongoClient.valid', err.message, err.stack);
+      await logger.error('TokensMongoClient.valid', err.message, { stack: err.stack });
       return false;
     }
   }
@@ -62,7 +64,7 @@ class TokensMongoClient {
       }
       return false;
     } catch (err) {
-      await logger.error('TokensMongoClient.destroy', err.message, err.stack);
+      await logger.error('TokensMongoClient.destroy', err.message, { stack: err.stack });
       return false;
     }
   }
@@ -85,7 +87,7 @@ class TokensMongoClient {
       }
       return null;
     } catch (err) {
-      await logger.error('TokensMongoClient.create', err.message, err.stack);
+      await logger.error('TokensMongoClient.create', err.message, { stack: err.stack });
       return null;
     }
   }
@@ -105,7 +107,7 @@ class TokensMongoClient {
 
       return null;
     } catch (err) {
-      await logger.error('TokensMongoClient.get', err.message, err.stack);
+      await logger.error('TokensMongoClient.get', err.message, { stack: err.stack });
       return null;
     }
   }
@@ -122,7 +124,7 @@ class TokensMongoClient {
       }
       return null;
     } catch (err) {
-      await logger.error('TokensMongoClient.findOne', err.message, err.stack);
+      await logger.error('TokensMongoClient.findOne', err.message, { stack: err.stack });
       return null;
     }
   }

@@ -42,6 +42,14 @@ if (process.env.NUS_UI_ENABLED === undefined || process.env.NUS_UI_ENABLED.toLow
   ui_enabled = true;
 }
 
+let ui_allowed_hosts = [];
+if (process.env.NUS_UI_ALLOWED_HOSTS) {
+  // split and trim the hosts
+  ui_allowed_hosts = process.env.NUS_UI_ALLOWED_HOSTS.split(',').map(h => h.trim());
+} else {
+  ui_allowed_hosts = ui_enabled ? ['*'] : [];
+}
+
 module.exports = {
   log: {
     level: {
@@ -53,7 +61,6 @@ module.exports = {
     url: buildMongoUrl(),
     database: process.env.NUS_MONGO_DATABASE || 'shortener_dev',
   },
-  webhost: process.env.NUS_WEBHOST_URL || 'http://localhost:3000',
   short: {
     length: {
       min: parseInt(process.env.NUS_SHORT_ID_MIN_LENGTH) || 6,
@@ -62,6 +69,7 @@ module.exports = {
   },
   ui: {
     enabled: ui_enabled,
+    allow: ui_allowed_hosts,
   },
   tokens: {
     prefix: process.env.NUS_TOKEN_PREFIX || 'nus_',

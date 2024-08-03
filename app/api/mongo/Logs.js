@@ -69,9 +69,9 @@ class LogsMongoClient {
         }
         break;
       case 'info':
-        console.info(clc.blue(msg));
+        console.info(clc.cyanBright(msg));
         if (mData) {
-          console.info(clc.blue(mData));
+          console.info(clc.cyanBright(mData));
         }
         break;
       case 'debug':
@@ -100,9 +100,15 @@ class LogsMongoClient {
 
       let result = null;
       if (reqLogLevel >= dbLogLevel) {
-        result = await collection.insertOne({
-          timestamp, level, message, ...data,
-        });
+        if (typeof data === 'object') {
+          result = await collection.insertOne({
+            timestamp, level, message, ...data,
+          });
+        } else {
+          result = await collection.insertOne({
+            timestamp, level, message, data,
+          });
+        }
       }
 
       if (reqLogLevel >= consoleLogLevel) {
@@ -114,7 +120,7 @@ class LogsMongoClient {
       }
       return true;
     } catch (err) {
-      this._consoleWriter('FATAL', 'LogsMongoClient.write', err.message, err.stack);
+      this._consoleWriter('FATAL', 'LogsMongoClient.write', err.message, { stack: err.stack });
       return false;
     }
   }

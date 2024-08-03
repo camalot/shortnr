@@ -1,6 +1,7 @@
 const { MongoClient } = require('mongodb');
 const config = require('../../config/env');
 const LogsMongoClient = require('./Logs');
+const requests = require('../helpers/requests');
 
 const logger = new LogsMongoClient();
 
@@ -34,18 +35,19 @@ class TrackingMongoClient {
           headers: req.headers,
           cookies: req.cookies,
           body: req.body,
-          hostname: req.hostname,
           ip: req.ip,
           ips: req.ips,
           method: req.method,
           originalUrl: req.originalUrl,
           params: req.params,
           protocol: req.protocol,
+          hostname: req.hostname,
+          port: req.port,
           query: req.query,
           route: req.route,
           // get source ip address
           source: req.get('X-Forwarded-For') || req.connection.remoteAddress,
-          webhost: config.webhost,
+          webhost: requests.getSourceHost(req),
         };
         const collection = this.db.collection(this.collection);
         // get current date and time in UTC unix timestamp
@@ -60,7 +62,7 @@ class TrackingMongoClient {
       }
       return false;
     } catch (err) {
-      await logger.error('TrackingMongoClient.create', err.message, err.stack);
+      await logger.error('TrackingMongoClient.create', err.message, { stack: err.stack });
       return false;
     }
   }
