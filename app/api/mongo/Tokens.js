@@ -29,14 +29,14 @@ class TokensMongoClient {
         await logger.debug('TokensMongoClient.valid', 'Token not required: returning true');
         return true;
       }
-      await logger.debug('TokensMongoClient.valid', 'Token required: checking token', { token });
+      await logger.debug('TokensMongoClient.valid', 'Token required: checking token');
       await this.connect();
       const collection = this.db.collection(this.collection);
       if (token) {
         const result = await collection.findOne({ token });
         await logger.debug('TokensMongoClient.valid', 'FindOne result', { result });
         if (result) {
-          await logger.debug('TokensMongoClient.valid', 'Token found', { token });
+          await logger.debug('TokensMongoClient.valid', 'Token found', { token_id: result.id.toString() });
           return result.enabled;
         }
         return false;
@@ -74,12 +74,19 @@ class TokensMongoClient {
       await this.connect();
       const collection = this.db.collection(this.collection);
       const timestamp = Math.floor(Date.now() / 1000);
+      if (!name) {
+        name = `token-${timestamp}-${randomizer.generate(4, 4)}`;
+      }
       const genToken = randomizer.generate(config.tokens.length, config.tokens.length);
       const token = `${config.tokens.prefix}${genToken}`;
       const result = await collection.insertOne({
         token,
         name,
         enabled: true,
+        scopes: [
+          'url.create',
+          'token.delete',
+        ],
         created_at: timestamp,
       });
       if (result.acknowledged && result.insertedId) {
@@ -89,6 +96,86 @@ class TokensMongoClient {
     } catch (err) {
       await logger.error('TokensMongoClient.create', err.message, { stack: err.stack });
       return null;
+    }
+  }
+
+  async hasScope(token, scope) {
+    try {
+      await this.connect();
+      const collection = this.db.collection(this.collection);
+      const result = await collection.findOne({ token });
+      if (result) {
+        if (!result.scopes) {
+          return false;
+        }
+        return result.scopes.includes(scope);
+      }
+    } catch (err) {
+      await logger.error('TokensMongoClient.hasScope', err.message, { stack: err.stack });
+      return false;
+    }
+  }
+
+  async grantScope(token, scope) {
+    try {
+      await this.connect();
+      const collection = this.db.collection(this.collection);
+
+      const tokenResult = this.findOne({ token });
+      if (!tokenResult) {
+        await logger.warn('TokensMongoClient.grant', 'Token not found', { token });
+        return false;
+      }
+
+      // remove token from result
+      delete tokenResult.token;
+
+      // if token has the scope, return true; otherwise, add the scope and return true
+      if (await this.hasScope(token, scope)) {
+        await logger.debug('TokensMongoClient.grant', 'Token already has scope', { token: tokenResult, scope });
+        return true;
+      }
+      const result = await collection.updateOne({ token }, { $push: { scopes: scope } });
+      await logger.debug('TokensMongoClient.grant', 'Update result', { result });
+      if (result.acknowledged && result.modifiedCount > 0) {
+        return true;
+      }
+      return false;
+    } catch (err) {
+      await logger.error('TokensMongoClient.grant', err.message, { stack: err.stack });
+      return false;
+    }
+  }
+
+  async revokeScope(token, scope) {
+    try {
+      await this.connect();
+      const collection = this.db.collection(this.collection);
+
+      const tokenResult = this.findOne({ token });
+      if (!tokenResult) {
+        await logger.warn('TokensMongoClient.grant', 'Token not found', { token });
+        return false;
+      }
+
+      // remove token from result
+      delete tokenResult.token;
+
+      // if token does nto have the scope, return true; otherwise, delete the scope and return true
+      if (await !this.hasScope(token, scope)) {
+        await logger.debug('TokensMongoClient.grant', 'Token already missing scope', { token: tokenResult, scope });
+        return true;
+      }
+
+      const result = await collection.updateOne({ token }, { $pull: { scopes: scope } });
+      await logger.debug('TokensMongoClient.grant', 'Update result', { result });
+      if (result.acknowledged && result.modifiedCount > 0) {
+        return true;
+      }
+      return false;
+    } catch (err) {
+      await logger.error('TokensMongoClient.revoke', err.message, { stack: err.stack });
+      return false;
     }
   }
 

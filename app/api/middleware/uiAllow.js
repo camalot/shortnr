@@ -5,7 +5,7 @@ const logger = new LogsMongoClient();
 
 async function verify(req, res, next) {
   if (!config.ui.enabled) {
-    await logger.info('uiAllow.verify', 'UI is disabled.');
+    await logger.debug('uiAllow.verify', 'UI is disabled.');
     return res.status(404).end();
   }
 
@@ -17,14 +17,14 @@ async function verify(req, res, next) {
 
   const reqestHostName = req.hostname;
   if (allowList.includes(reqestHostName)) {
-    await logger.info('uiAllow.verify', `UI is allowed for requested host: ${reqestHostName}`);
+    await logger.debug('uiAllow.verify', `UI is allowed for requested host: ${reqestHostName}`);
     return next();
   }
 
   // loop allow list and create a regex to match the host name
   const regex = new RegExp(allowList.join('|').replace(/\./g, '\\.').replace(/\*/g, '.*'));
   if (regex.test(reqestHostName)) {
-    await logger.info('uiAllow.verify', `UI is allowed for requested host: ${reqestHostName} using regex.`, { regex: regex.toString() });
+    await logger.debug('uiAllow.verify', `UI is allowed for requested host: ${reqestHostName} using regex.`, { regex: regex.toString() });
     return next();
   }
 

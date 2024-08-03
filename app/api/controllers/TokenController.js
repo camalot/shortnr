@@ -6,7 +6,8 @@ const randomizer = require('../helpers/randomizer');
 
 const logger = new LogsMongoClient();
 
-async function create(req, res) {
+
+async function create(req, res, next) {
   try {
     const Track = new TrackingMongoClient();
 
@@ -35,7 +36,7 @@ async function create(req, res) {
   }
 }
 
-async function destroy(req, res) {
+async function destroy(req, res, next) {
   try {
     if (!config.tokens.create.enabled) {
       return res.status(404).end();
@@ -58,6 +59,22 @@ async function destroy(req, res) {
   }
 }
 
+async function grantScope(req, res, next) {
+  return next();
+}
+
+async function revokeScope(req, res, next) {
+  return next();
+}
+
+async function enable(req, res, next) {
+  return next();
+}
+
+async function disable(req, res, next) {
+  return next();
+}
+
 module.exports = {
-  create, destroy,
+  create, destroy, grantScope, revokeScope, enable, disable
 };
