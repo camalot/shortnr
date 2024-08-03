@@ -30,9 +30,10 @@ class StatsMongoClient {
 
   async getRedirectCountsForShort(id) {
     try {
-      return this.getTrackingCountsByMatch(
-        { id, action: 'redirect' }, { _id: '$id', total: { $sum: 1 } }
-      );
+      return this.getTrackingCountsByMatch([
+        { $match: { id, action: 'redirect' } }, 
+        { $group: { _id: '$id', total: { $sum: 1 } } },
+      ]);
     } catch (err) {
       logger.error('StatsMongoClient.getRedirectCountsForShort', err.message, err.stack);
       return null;
@@ -41,9 +42,10 @@ class StatsMongoClient {
 
   async getRedirectCounts() {
     try {
-      return this.getTrackingCountsByMatch(
-        { action: 'redirect' }, { _id: { id: '$id', token_id: { '$ifNull': ['$created_by', 'anonymous'] } }, total: { $sum: 1 } }
-      );
+      return this.getTrackingCountsByMatch([ 
+        { $match: { action: 'redirect' } },
+        { $group: { _id: { id: '$id', token_id: { '$ifNull': ['$created_by', 'anonymous'] } }, total: { $sum: 1 } } }
+      ]);
     } catch (err) {
       await logger.error('StatsMongoClient.getRedirectCounts', err.message, err.stack);
       return null;
@@ -52,9 +54,10 @@ class StatsMongoClient {
 
   async getShortenCounts() {
     try {
-      return this.getTrackingCountsByMatch(
-        { action: 'shorten', "new": true }, { _id: { token_id: { '$ifNull': [ '$created_by', 'anonymous' ] } }, total: { $sum: 1 } }
-      );
+      return this.getTrackingCountsByMatch([
+        { $match: { action: 'shorten', "new": true } },
+        { $group: { _id: { token_id: { '$ifNull': [ '$created_by', 'anonymous' ] } }, total: { $sum: 1 } } },
+      ]);
     } catch (err) {
       await logger.error('StatsMongoClient.getRedirectCounts', err.message, err.stack);
       return null;
@@ -97,6 +100,7 @@ class StatsMongoClient {
       await this.connect();
       const collection = this.db.collection(this.tracking);
       const results = await collection.aggregate([
+        { $sort: { action: 1 } },
         { $group: { _id: '$action', total: { $sum: 1 } } }
       ]).toArray();
       return results;
@@ -106,14 +110,11 @@ class StatsMongoClient {
     }
   }
 
-  async getTrackingCountsByMatch(match, group) {
+  async getTrackingCountsByMatch(pipeline, options) {
     try {
       await this.connect();
       const collection = this.db.collection(this.tracking);
-      const result = await collection.aggregate([
-        { $match: match },
-        { $group: group }
-      ]).toArray();
+      const result = await collection.aggregate(pipeline, options).toArray();
       return result;
     } catch (err) {
       throw err;

@@ -56,7 +56,7 @@ async function shorten(req, res) {
         new: isNew,
         created_by: short.created_by,
       };
-      await logger.debug(JSON.stringify(output));
+      await logger.debug('UrlController.shorten', JSON.stringify(output));
       await Tracking.create(req, { action: 'url.shorten', ...output });
       delete output.created_by;
       return res.status(200).json(output);
