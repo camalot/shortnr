@@ -4,6 +4,18 @@ const LogsMongoClient = require('../mongo/Logs');
 
 const logger = new LogsMongoClient();
 
+async function registerScopes(req, res, route, method, scopes) {
+  if (!res.locals[route]) {
+    res.locals[route] = {};
+  }
+  if (!res.locals[route][method.toLowerCase()]) {
+    res.locals[route][method.toLowerCase()] = {};
+  }
+
+  await logger.debug('TokenMiddleware.registerScopes', `Registering scopes: ${JSON.stringify(scopes)} for ${route}}:${method.toUpperCase()}`);
+  res.locals[route][method].scopes = scopes;
+}
+
 async function scope(req, res, next) {
   let activeRoute = req.route.path;
 
@@ -12,29 +24,49 @@ async function scope(req, res, next) {
   }
 
   // loop all methods for the route
-  for (const method in req.route.methods) {
-    if (req.route.methods[method]) {
-      if (!res.locals[activeRoute][method.toLowerCase()]) {
-        res.locals[activeRoute][method.toLowerCase()] = {};
+  for (const m in req.route.methods) {
+    if (req.route.methods[m]) {
+      if (!res.locals[activeRoute][m.toLowerCase()]) {
+        res.locals[activeRoute][m.toLowerCase()] = {};
       }
     }
   }
 
+  let scopes = [];
+  let method = 'get';
+
   switch (req.route.path) {
     case '/api/token':
-      await logger.debug('TokenMiddleware.scope', 'Registering scopes: [] for /api/token:POST');
-      res.locals[activeRoute]['post'].scopes = [];
+      scopes = [];
+      method = 'post';
+      await registerScopes(req, res, activeRoute, method, scopes);
       break;
     case '/api/token/:id':
-      await logger.debug('TokenMiddleware.scope', 'Registering scopes: [token.delete] for /api/token/:id:DELETE');
-      // todo: set delete scope to ONLY the token id
-      // 'token.delete.123467890' or 'token.delete.*' for all tokens
-      res.locals[activeRoute]['delete'].scopes = ['token.delete'];
+      method = 'delete';
+      scopes = ['token.delete'];
+      
+      // // get the id from the route
+      // let token_id = req.params.id || req.query.id;
+      // if (token_id) {
+      //   scopes = [`token.delete.${token_id}`];
+      // }
+
+      await registerScopes(req, res, activeRoute, method, scopes);
       break;
     case '/api/token/scope/:id':
-      await logger.debug('TokenMiddleware.scope', 'Registering scopes: [token.scope] for /api/token/scope/:id:POST');
-      res.locals[activeRoute]['post'].scopes = ['token.scope.grant'];
-      res.locals[activeRoute]['delete'].scopes = ['token.scope.revoke'];
+      // same type of granular scope as above?
+      scopes = ['token.scope.grant'];
+      method = 'post';
+      await registerScopes(req, res, activeRoute, method, scopes);
+      scopes = ['token.scope.revoke'];
+      method = 'delete';
+      await registerScopes(req, res, activeRoute, method, scopes);
+      break;
+    case '/api/token/disable/:id':
+    case '/api/token/enable/:id':
+      scopes = ['token.enable'];
+      method = 'patch';
+      await registerScopes(req, res, activeRoute, method, scopes);
       break;
     default:
       return next();

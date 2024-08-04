@@ -8,5 +8,5 @@ const logger = new LogsMongoClient();
 const port = parseInt(process.env.PORT || '3000', 10) || 3000;
 
 app.listen(port, () => {
-  logger.info('shortnr.bin.www', `shortnr listening => ':${port}'`);
+  logger.info('shortnr.bin.www', `shortnr listening → ':${port}'`);
 });

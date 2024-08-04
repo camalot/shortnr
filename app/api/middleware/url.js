@@ -3,6 +3,18 @@ const LogsMongoClient = require('../mongo/Logs');
 
 const logger = new LogsMongoClient();
 
+async function registerScopes(req, res, route, method, scopes) {
+  if (!res.locals[route]) {
+    res.locals[route] = {};
+  }
+  if (!res.locals[route][method.toLowerCase()]) {
+    res.locals[route][method.toLowerCase()] = {};
+  }
+
+  await logger.debug('UrlMiddleware.registerScopes', `Registering scopes: ${JSON.stringify(scopes)} for ${route}}:${method.toUpperCase()}`);
+  res.locals[route][method].scopes = scopes;
+}
+
 async function blocked(req, res, next) {
   const targetUrl = req.body.url.replace(/\/$/, '');
   const blockedHosts = config.short.blocked.hosts;
@@ -35,24 +47,29 @@ async function scope(req, res, next) {
   }
 
   // loop all methods for the route
-  for (const method in req.route.methods) {
-    if (req.route.methods[method]) {
-      if (!res.locals[activeRoute][method.toLowerCase()]) {
-        res.locals[activeRoute][method.toLowerCase()] = {};
+  for (const m in req.route.methods) {
+    if (req.route.methods[m]) {
+      if (!res.locals[activeRoute][m.toLowerCase()]) {
+        res.locals[activeRoute][m.toLowerCase()] = {};
       }
     }
   }
+
+  let scopes = [];
+  let method = 'get';
 
   switch (req.route.path) {
     case '/go/:id':
     case '/g/:id':
     case '/:id':
-      await logger.debug('UrlMiddleware.scope', `Registering scopes: [] for ${req.route.path}:GET`);
-      res.locals[activeRoute]['get'].scopes = [];
+      scopes = [];
+      method = 'get';
+      await registerScopes(req, res, activeRoute, method, scopes);
       break;
     case '/api/shorten':
-      await logger.debug('UrlMiddleware.scope', `Registering scopes: [url.create] for ${req.route.path}:POST`);
-      res.locals[activeRoute]['post'].scopes = ['url.create']
+      scopes = ['url.create'];
+      method = 'post';
+      await registerScopes(req, res, activeRoute, method, scopes);
       break;
     default:
       return next();

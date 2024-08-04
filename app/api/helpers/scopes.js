@@ -2,7 +2,7 @@
 module.exports = {
   scopes: {
     'default': {
-      scopes: ['url.create', 'token.delete', 'token.enable']
+      scopes: ['url.create', 'token.delete', 'token.enable', 'stats.read']
     },
     'url.create': {
       scopes: ['url.create']
@@ -22,6 +22,8 @@ module.exports = {
     'token.scope.revoke': {
       scopes: ['token.scope.revoke']
     },
-
+    'stats.read': {
+      scopes: ['stats.read']
+    },
   }
 }

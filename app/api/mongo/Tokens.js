@@ -86,10 +86,17 @@ class TokensMongoClient {
         scopes: [
           'url.create',
           'token.delete',
+          'token.enable', 
+          'stats.read',
         ],
         created_at: timestamp,
       });
       if (result.acknowledged && result.insertedId) {
+        // update the scopes to add token.delete.:token_id
+        await collection.updateOne(
+          { _id: result.insertedId }, 
+          { $push: { scopes: `token.delete.${result.insertedId.toString()}` } }
+        );
         return { id: result.insertedId.toString(), token, name };
       }
       return null;

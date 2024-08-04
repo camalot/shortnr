@@ -7,29 +7,63 @@ It is mongodb backed, versus MySQL, and entirely REST based. There is no fronten
 
  [URL shortening](http://en.wikipedia.org/wiki/URL_shortening) is a technique to convert a long URL (site or page address) to a shorter version. This shorter version of the URL is usually cleaner and easier to share or remember. When someone accesses the shortened address, the browser redirects to the original (large) URL address. It is also called URL redirection or URL redirect.
 
+## CONFIGURATION
+
+### ENVIRONMENT VARIABLES
+
+| NAME | DESCRIPTION | DEFAULT | REQUIRED |
+| ---- | ----------- | ------- | :------: |
+| `NUS_MONGODB_URL` | Connection string for mongodb | `<mongodb:localhost>` | `false` |
+| `NUS_MONGODB_USERNAME` | mongodb username. Alternate to `NUS_MONGODB_URL` | `` | `false` |
+| `NUS_MONGODB_PASSWORD` | mongodb user password. Alternate to `NUS_MONGODB_URL` | `` | `false` |
+| `NUS_MONGODB_HOST` | mongodb host. Alternate to `NUS_MONGODB_URL` | `localhost` | `false` |
+| `NUS_MONGODB_PORT` | mongodb port. Alternate to `NUS_MONGODB_URL` | `27017` | `false` |
+| `NUS_MONGODB_AUTHSOURCE` | mongodb auth source database. Alternate to `NUS_MONGODB_URL` | `admin` | `false` |
+| `NUS_MONGODB_DATABASE` | The name of the database to use for data storage | `shortener_dev` | `false` |
+| `NUS_LOG_LEVEL` | Minimum level of logging that will get put in the database | `WARN` | `false` |
+| `NUS_LOG_LEVEL_CONSOLE` | Minimum level of logging that will get sent to stderr/stdout | `DEBUG` | `false` |
+| `NUS_UI_ENABLED` | Turn on or off the UI | `true` | `false` |
+| `NUS_UI_ALLOWED_HOSTS` | Even if the UI is enabled, you can restrict access via specific hosts. Enter a comma separated list. This uses a "wildcard" of `*`. | `*` | `false` |
+| `NUS_BLOCKED_HOSTS` | A comma separated list of hostnames that cannot be shortened. | `` | `false` |
+| `NUS_BLOCKED_PROTOCOLS` | A comma separated list of URI schemes without `://` that cannot be shortened. | `` | `false` |
+| `NUS_ENABLE_TOKEN_CREATE` | Disable the ability to create API Access Tokens. Existing tokens will still work. | `` | `false` |
+| `NUS_TOKEN_REQUIRED` | Enables the requirement of having an access token with proper scopes to perform API requests | `true` | `false` |
+| `NUS_TOKEN_PREFIX` | A prefix to put on the token. | `nus_` | `false` |
+| `NUS_TOKEN_LENGTH` | The length of the generated tokens. | `36` | `false` |
+| `NUS_SHORT_ID_MIN_LENGTH` | The minimum length of the generated shortened URL ID. | `4` | `false` |
+| `NUS_SHORT_ID_MAX_LENGTH` | The maximum length of the generated shortened URL ID. | `8` | `false` |
+
+
 ## API ENDPOINTS
 
 ### AUTHENTICATION
 
 > [!IMPORTANT]  
-> If `env.NUS_TOKEN_REQUIRED` is `true` then `headers['x-access-token']` MUST contain a token that exists in `mongodb.shortener.tokens`
+> If `env.NUS_TOKEN_REQUIRED` is `true` request MUST contain a token that exists in `mongodb.shortener.tokens`
+
+Token can be passed via HTTP Headers.
+
+``` javascript
+  headers['x-access-token'] = 'nus_kRuCYY9WArKYxhBo9HbJQfFGoiNhd4EdNK6w' // gitleaks:allow
+  headers['authorization'] = 'Bearer nus_kRuCYY9WArKYxhBo9HbJQfFGoiNhd4EdNK6w' // gitleaks:allow
+```
 
 ### HEALTH
 
 The health endpoint.
 
-| METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION |
-| --- | --- | --- | --- |
-| `GET` | `/health` | The health endpoint | `false` |
+| METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION | SCOPES |
+| ------ | -------- | ----------- | :------------: | ------ |
+| `GET` | `/health` | The health endpoint | `false` | `[]` |
 
 ### SHORTEN
 
 > [!NOTE]  
 > Authentication only required if `env.NUS_TOKEN_REQUIRED == true`  
 
-| METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION |
-| --- | --- | --- | --- |
-| `POST` | `/api/shorten` | Shorten a URL | `true?` |
+| METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION | SCOPES |
+| ------ | -------- | ----------- | :------------: | ------ |
+| `POST` | `/api/shorten` | Shorten a URL | `true?` | `['url.create']` |
 
 #### SHORTEN PAYLOAD
 
@@ -60,11 +94,11 @@ The health endpoint.
 
 ### REDIRECT
 
-| METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION |
-| --- | --- | --- | --- |
-| `GET` | `/:id` | Redirect to the original URL | `false` |
-| `GET` | `/g/:id` | Redirect to the original URL | `false` |
-| `GET` | `/go/:id` | Redirect to the original URL | `false` |
+| METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION | SCOPES |
+| ------ | -------- | ----------- | :------------: | ------ |
+| `GET` | `/:id` | Redirect to the original URL | `false` | `[]` |
+| `GET` | `/g/:id` | Redirect to the original URL | `false` | `[]` |
+| `GET` | `/go/:id` | Redirect to the original URL | `false` | `[]` |
 
 #### REDIRECT PAYLOAD
 
@@ -78,14 +112,40 @@ null
 res.redirect(target, 301);
 ```
 
+### METRICS
+
+> [!NOTE]  
+> Authentication only required if `env.NUS_TOKEN_REQUIRED == true`
+
+| METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION | SCOPES |
+| ------ | -------- | ----------- | :------------: | ------ |
+| `GET` | `/metrics` | Prometheus exported metrics | `true?` | `['stats.read']` |
+
+
 ### STATS
 
 > [!NOTE]  
 > Authentication only required if `env.NUS_TOKEN_REQUIRED == true`
 
-| METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION |
-| --- | --- | --- | --- |
-| `GET` | `/api/stats/:hash` | Get statistics of the shortened URL | `true?` |
+| METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION | SCOPES |
+| ------ | -------- | ----------- | :------------: | ------ |
+| `GET` | `/api/stats/` | General stats information | `true?` | `['stats.read']` |
+
+#### STATS PAYLOAD
+
+``` json
+null
+```
+
+
+### STATS FOR SHORT
+
+> [!NOTE]  
+> Authentication only required if `env.NUS_TOKEN_REQUIRED == true`
+
+| METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION | SCOPES |
+| ------ | -------- | ----------- | :------------: | ------ |
+| `GET` | `/api/stats/:hash` | Get statistics of the shortened URL | `true?` | `['stats.read']` |
 
 #### STATS PAYLOAD
 
@@ -98,8 +158,8 @@ null
 
 ### TOKEN CREATE
 
-| METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION |
-| --- | --- | --- | --- |
+| METHOD | ENDPOINT | DESCRIPTION | AUTHENTICATION | SCOPES |
+| ------ | -------- | ----------- | :------------: | ------ |
 | `POST` | `/api/token/` | Create a new token | `false` |
 
 #### TOKEN CREATE PAYLOAD
@@ -116,7 +176,7 @@ null
 {
   "id": "66ac00909a84987ad753ab0d",
   "name": "My CLI Token",
-  "token": "kRuCYY9WArKYxhBo9HbJQfFGoiNhd4EdNK6w" // gitleaks:allow
+  "token": "nus_kRuCYY9WArKYxhBo9HbJQfFGoiNhd4EdNK6w" // gitleaks:allow
 }
 ```
 

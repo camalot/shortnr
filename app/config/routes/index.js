@@ -1,19 +1,19 @@
-const express = require('express');
-const urlRoutes = require('./url');
-const tokenRoutes = require('./token');
-const statsRoutes = require('./stats');
+const UrlRouter = require('./url');
+const TokenRouter = require('./token');
+const StatsRouter = require('./stats');
 const config = require('../env/environment');
+const { Router } = require('express');
 
-const router = express.Router();
+const router = Router();
 
 router.get('/health', (req, res) => res.status(200).json({ status: 'ok' }));
 
-router.use('/', statsRoutes);
+router.use('/', StatsRouter);
 
-router.use('/', urlRoutes);
+router.use('/', UrlRouter);
 
 if (config.tokens.create.enabled) {
-  router.use('/', tokenRoutes);
+  router.use('/', TokenRouter);
 }
 
 module.exports = router;
