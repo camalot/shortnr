@@ -64,7 +64,12 @@ module.exports = {
     length: {
       min: parseInt(process.env.NUS_SHORT_ID_MIN_LENGTH) || 6,
       max: parseInt(process.env.NUS_SHORT_ID_MAX_LENGTH) || 12
+    },
+    blocked: {
+      hosts: process.env.NUS_BLOCKED_HOSTS ? process.env.NUS_BLOCKED_HOSTS.split(',').map(h => h.trim()) : [],
+      protocols: process.env.NUS_BLOCKED_PROTOCOLS ? process.env.NUS_BLOCKED_PROTOCOLS.split(',').map(h => h.trim()) : []
     }
+
   },
   ui: {
     enabled: ui_enabled,

@@ -1,4 +1,5 @@
 const requests = require('../helpers/requests');
+const config = require('../../config');
 const UrlsMongoClient = require('../mongo/Urls');
 const TrackingMongoClient = require('../mongo/Tracking');
 const LogsMongoClient = require('../mongo/Logs');
@@ -8,7 +9,6 @@ const logger = new LogsMongoClient();
 async function shorten(req, res) {
   try {
     const Url = new UrlsMongoClient();
-    const Tracking = new TrackingMongoClient();
     const tokenId = res.locals.token ? res.locals.token.id : null;
 
     if (req.body.url) {
@@ -27,24 +27,7 @@ async function shorten(req, res) {
         return res.status(500).json({ error: 'Invalid shorten payload.' });
       }
 
-      const sourceHost = requests.getSourceHost(req);
-      // If the url already exists, return the existing short url
-      const output = {
-        id: short.id,
-        target: short.target_url,
-        url: `${sourceHost}/${short.id}`,
-        urls: [
-          `${sourceHost}/${short.id}`,
-          `${sourceHost}/g/${short.id}`,
-          `${sourceHost}/go/${short.id}`,
-        ],
-        new: isNew,
-        created_by: short.created_by,
-      };
-      await logger.debug('UrlController.shorten', JSON.stringify(output));
-      await Tracking.create(req, { action: 'url.shorten', ...output });
-      delete output.created_by;
-      return res.status(200).json(output);
+      return createShortResponse(req, res, short, isNew);
     }
     await logger.warn('UrlController.shorten', 'Invalid shorten payload.');
     return res.status(400).json({ error: 'Invalid shorten payload.' });
@@ -67,6 +50,29 @@ async function redirect(req, res) {
 
   await logger.warn('UrlController.redirect', `Short url not found: ${id}`);
   return res.status(404).end();
+}
+
+async function createShortResponse(req, res, short, isNew) {
+  const Tracking = new TrackingMongoClient();
+
+  const sourceHost = requests.getSourceHost(req);
+  // If the url already exists, return the existing short url
+  const output = {
+    id: short.id,
+    target: short.target_url,
+    url: `${sourceHost}/${short.id}`,
+    urls: [
+      `${sourceHost}/${short.id}`,
+      `${sourceHost}/g/${short.id}`,
+      `${sourceHost}/go/${short.id}`,
+    ],
+    new: isNew,
+    created_by: short.created_by,
+  };
+  await logger.debug('UrlController.shorten', JSON.stringify(output));
+  await Tracking.create(req, { action: 'url.shorten', ...output });
+  delete output.created_by;
+  return res.status(200).json(output);
 }
 
 module.exports = {

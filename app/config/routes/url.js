@@ -8,6 +8,7 @@ const router = Router();
 router.route('/api/shorten')
   .post(url.scope)
   .post(token.verify)
+  .post(url.blocked)
   .post(UrlController.shorten);
 
 router.route('/go/:id')
