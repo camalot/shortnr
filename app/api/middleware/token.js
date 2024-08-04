@@ -29,11 +29,12 @@ async function scope(req, res, next) {
       await logger.debug('TokenMiddleware.scope', 'Registering scopes: [token.delete] for /api/token/:id:DELETE');
       // todo: set delete scope to ONLY the token id
       // 'token.delete.123467890' or 'token.delete.*' for all tokens
-      res.locals[activeRoute]['delete'].scopes = ['token.delete']
+      res.locals[activeRoute]['delete'].scopes = ['token.delete'];
       break;
     case '/api/token/scope/:id':
       await logger.debug('TokenMiddleware.scope', 'Registering scopes: [token.scope] for /api/token/scope/:id:POST');
-      res.locals[activeRoute]['post'].scopes = ['token.scope']
+      res.locals[activeRoute]['post'].scopes = ['token.scope.grant'];
+      res.locals[activeRoute]['delete'].scopes = ['token.scope.revoke'];
       break;
     default:
       return next();

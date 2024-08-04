@@ -60,11 +60,71 @@ async function destroy(req, res, next) {
 }
 
 async function grantScope(req, res, next) {
-  return next();
+  try {
+    const Track = new TrackingMongoClient();
+    const Tokens = new TokensMongoClient();
+    const { id } = req.params;
+    const { scope } = req.body;
+    let { scopes } = req.body || [];
+
+    if (!scope && (!scopes || scopes.length === 0)) {
+      return res.status(400).json({ error: 'Missing required field: scope/scopes' });
+    }
+
+    // merge scopes and scope into a single array
+    if (scopes && scope) {
+      if (scope) {
+        scopes.push(scope);
+      }
+    } else {
+      scopes = [scope];
+    }
+
+    const result = await Tokens.grantScope(id, scopes);
+    if (result) {
+      await Track.create(req, { action: 'token.scopes.grant', token: { id, scope } });
+      return res.status(204).end();
+    }
+
+    return res.status(500).json({ error: 'Unable to grant scope.' });
+  } catch (err) {
+    await logger.error('TokenController.grantScope', err, { stack: err.stack });
+    return res.status(500).json({ error: 'An error has occurred' });
+  }
 }
 
 async function revokeScope(req, res, next) {
-  return next();
+  try {
+    const Track = new TrackingMongoClient();
+    const Tokens = new TokensMongoClient();
+    const { id } = req.params;
+    const { scope } = req.body;
+    let { scopes } = req.body || [];
+
+    if (!scope && (!scopes || scopes.length === 0)) {
+      return res.status(400).json({ error: 'Missing required field: scope/scopes' });
+    }
+
+    // merge scopes and scope into a single array
+    if (scopes && scope) {
+      if (scope) {
+        scopes.push(scope);
+      }
+    } else {
+      scopes = [scope];
+    }
+
+    const result = await Tokens.revokeScope(id, scopes);
+    if (result) {
+      await Track.create(req, { action: 'token.scopes.revoke', token: { id, scope } });
+      return res.status(204).end();
+    }
+
+    return res.status(500).json({ error: 'Unable to revoke scope.' });
+  } catch (err) {
+    await logger.error('TokenController.revokeScope', err, { stack: err.stack });
+    return res.status(500).json({ error: 'An error has occurred' });
+  }
 }
 
 async function enable(req, res, next) {

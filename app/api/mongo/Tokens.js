@@ -116,7 +116,7 @@ class TokensMongoClient {
     }
   }
 
-  async grantScope(token, scope) {
+  async grantScope(token, scopes) {
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
@@ -131,23 +131,32 @@ class TokensMongoClient {
       delete tokenResult.token;
 
       // if token has the scope, return true; otherwise, add the scope and return true
-      if (await this.hasScope(token, scope)) {
-        await logger.debug('TokensMongoClient.grant', 'Token already has scope', { token: tokenResult, scope });
-        return true;
+      let updateResult = false;
+      for (const scope of scopes) {
+        if (await this.hasScope(token, scope)) {
+          await logger.debug('TokensMongoClient.grant', 'Token already has scopes', { token: tokenResult, scope });
+          continue;
+        }
+        const result = await collection.updateOne({ token }, { $push: { scopes: scope } });
+        await logger.debug('TokensMongoClient.grant', 'Update result', { result });
+        if (result.acknowledged && result.modifiedCount > 0) {
+          updateResult = true;
+        } else {
+          updateResult = false;
+        }
       }
-      const result = await collection.updateOne({ token }, { $push: { scopes: scope } });
-      await logger.debug('TokensMongoClient.grant', 'Update result', { result });
-      if (result.acknowledged && result.modifiedCount > 0) {
-        return true;
+      
+      if (updateResult) {
+        return await this.findOne({ token });
       }
-      return false;
+      return null;
     } catch (err) {
       await logger.error('TokensMongoClient.grant', err.message, { stack: err.stack });
-      return false;
+      return null;
     }
   }
 
-  async revokeScope(token, scope) {
+  async revokeScope(token, scopes) {
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
@@ -160,22 +169,29 @@ class TokensMongoClient {
 
       // remove token from result
       delete tokenResult.token;
-
-      // if token does nto have the scope, return true; otherwise, delete the scope and return true
-      if (await !this.hasScope(token, scope)) {
-        await logger.debug('TokensMongoClient.grant', 'Token already missing scope', { token: tokenResult, scope });
-        return true;
+      // if token has the scope, return true; otherwise, add the scope and return true
+      let updateResult = false;
+      for (const scope of scopes) {
+        if (!this.hasScope(token, scope)) {
+          await logger.debug('TokensMongoClient.grant', 'Token already missing scope', { token: tokenResult, scope });
+          continue;
+        }
+        const result = await collection.updateOne({ token }, { $pull: { scopes: scope } });
+        await logger.debug('TokensMongoClient.grant', 'Update result', { result });
+        if (result.acknowledged && result.modifiedCount > 0) {
+          updateResult = true;
+        } else {
+          updateResult = false;
+        }
       }
-
-      const result = await collection.updateOne({ token }, { $pull: { scopes: scope } });
-      await logger.debug('TokensMongoClient.grant', 'Update result', { result });
-      if (result.acknowledged && result.modifiedCount > 0) {
-        return true;
+      if (updateResult) {
+        return await this.findOne({ token });
+      } else {
+        return null;
       }
-      return false;
     } catch (err) {
       await logger.error('TokensMongoClient.revoke', err.message, { stack: err.stack });
-      return false;
+      return null;
     }
   }
 
@@ -185,7 +201,7 @@ class TokensMongoClient {
       const collection = this.db.collection(this.collection);
       if (id) {
         const objectId = ObjectId.createFromHexString(id);
-        const result = collection.findOne({ _id: objectId });
+        const result = this.findOne({ _id: objectId });
         if (result) {
           return result;
         }
