@@ -33,7 +33,7 @@ class TokensMongoClient {
       await this.connect();
       const collection = this.db.collection(this.collection);
       if (token) {
-        const result = await collection.findOne({ token });
+        const result = await this.findOne({ token });
         await logger.debug('TokensMongoClient.valid', 'FindOne result', { result });
         if (result) {
           await logger.debug('TokensMongoClient.valid', 'Token found', { token_id: result.id.toString() });

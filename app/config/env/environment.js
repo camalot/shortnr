@@ -23,7 +23,6 @@ function buildMongoUrl() {
       return url;
     }
   }
-
   return 'mongodb://localhost:27017/admin';
 }
 
