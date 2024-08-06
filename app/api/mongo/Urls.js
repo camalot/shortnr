@@ -1,4 +1,5 @@
-const { MongoClient } = require('mongodb');
+// const { MongoClient } = require('mongodb');
+const DatabaseMongoClient = require('./Database');
 const config = require('../../config/env');
 const randomizer = require('../helpers/randomizer');
 const TokensMongoClient = require('./Tokens');
@@ -6,22 +7,10 @@ const LogsMongoClient = require('./Logs');
 
 const logger = new LogsMongoClient();
 
-class UrlsMongoClient {
+class UrlsMongoClient extends DatabaseMongoClient {
   constructor() {
-    this.database = config.mongo.database;
+    super();
     this.collection = 'urls';
-    this.url = config.mongo.url;
-    this.client = null;
-    this.db = null;
-  }
-
-  async connect() {
-    this.client = await MongoClient.connect(this.url, { });
-    this.db = this.client.db(this.database);
-  }
-
-  async close() {
-    await this.client.close();
   }
 
   async get(id) {

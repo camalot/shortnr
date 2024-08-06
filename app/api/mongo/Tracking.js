@@ -1,26 +1,15 @@
-const { MongoClient } = require('mongodb');
+// const { MongoClient } = require('mongodb');
+const DatabaseMongoClient = require('./Database');
 const config = require('../../config/env');
 const LogsMongoClient = require('./Logs');
 const requests = require('../helpers/requests');
 
 const logger = new LogsMongoClient();
 
-class TrackingMongoClient {
+class TrackingMongoClient extends DatabaseMongoClient {
   constructor() {
-    this.database = config.mongo.database;
+    super();
     this.collection = 'tracking';
-    this.url = config.mongo.url;
-    this.client = null;
-    this.db = null;
-  }
-
-  async connect() {
-    this.client = await MongoClient.connect(this.url, {});
-    this.db = this.client.db(this.database);
-  }
-
-  async close() {
-    await this.client.close();
   }
 
   async create(req, payload) {
