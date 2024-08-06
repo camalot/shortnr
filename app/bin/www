@@ -1,12 +1,40 @@
 require('dotenv').config();
 
-const app = require('../config/express');
+const hbs = require('hbs');
 const LogsMongoClient = require('../api/mongo/Logs');
+const config = require('../config');
+const express = require('express');
+const path = require('path');
+const bodyParser = require('body-parser');
+const routes = require('../routes/index');
+const ui = require('../api/middleware/ui');
 
+const app = express();
 const logger = new LogsMongoClient();
 
-const port = parseInt(process.env.PORT || '3000', 10) || 3000;
+app.set('view engine', 'hbs');
+app.set('views', path.join(path.resolve(), 'views'));
+require('../api/hbs/xif');
+require('../api/hbs/sections');
 
-app.listen(port, () => {
-  logger.info('shortnr.bin.www', `shortnr listening → ':${port}'`);
+app.use(bodyParser.json());
+app.use(bodyParser.urlencoded({ extended: true }));
+
+app.use(express.static(path.join(path.resolve(), 'assets')));
+
+app.get('/', ui.allow, (req, res) => {
+  return res.render('index', { title: 'Shortnr', config });
+})
+
+app.get('/', (req, res) => {
+  return res.sendStatus(404);
+});
+
+app.use('/', routes);
+
+module.exports = app;
+
+const port = parseInt(process.env.PORT || '3000', 10) || 3000;
+app.listen(port, async () => {
+  await logger.info('shortnr.bin.www', `shortnr listening → ':${port}'`);
 });

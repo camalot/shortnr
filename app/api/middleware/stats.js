@@ -38,7 +38,12 @@ async function scope(req, res, next) {
     case '/api/stats':
     case '/api/stats/:id':
     case '/metrics':
-      scopes = config.tokens.required ? ['stats.read'] : [];
+      if (config.metrics.tokenRequired && config.tokens.required) {
+        await logger.debug('StatsMiddleware.scope', 'Token and stats required');
+        scopes = ['stats.read'];
+      } 
+
+      scopes = scopes;
       method = 'get';
       await registerScopes(req, res, activeRoute, method, scopes);
       break;

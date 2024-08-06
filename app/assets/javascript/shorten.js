@@ -1,3 +1,4 @@
+
 $(() => {
   console.log('ready');
   if (!localStorage.getItem('token')) {
@@ -38,7 +39,7 @@ function randomizer(min, max) {
   return result;
 }
 
-$('.btn-shorten').on('click', () => {
+$('.btn-shorten').on('click', function() {
   // todo: check if tokens are required
   if (!localStorage.getItem('token')) {
     generateToken();
@@ -61,7 +62,7 @@ $('.btn-shorten').on('click', () => {
   });
 });
 
-$('.btn-token').on('click', () => {
+$('.btn-token').on('click', function() {
   console.log('clicked');
   $.ajax({
     url: '/api/token',
@@ -77,6 +78,30 @@ $('.btn-token').on('click', () => {
   });
 });
 
+$('.btn.btn-token-showhide').on('click', function() {
+  const isHidden = $('#token').attr('type') === 'password';
+  if (isHidden) {
+    $(this)
+      .addClass('btn-token-hidden')
+      .removeClass('btn-token-shown')
+      .attr('title', 'Hide Token');
+    $('.fa-eye', this)
+      .removeClass('fa-eye')
+      .addClass('fa-eye-slash');
+    $('#token').attr('type', 'text');
+  } else {
+    $(this)
+      .addClass('btn-token-shown')
+      .removeClass('btn-token-hidden')
+      .attr('title', 'Show Token');
+    $('.fa-eye-slash', this)
+      .removeClass('fa-eye-slash')
+      .addClass('fa-eye');
+    $('#token').attr('type', 'password');
+  }
+});
+
+
 // $('.btn-copy.btn-token-copy').on('click', () => {
 //   const $temp = $('<input style="display:none;"/>');
 //   $('body').append($temp);
@@ -91,3 +116,6 @@ $('.btn-token').on('click', () => {
 //   document.execCommand("copy");
 //   window.getSelection().removeAllRanges();// to deselect
 // });
+
+
+$('.kpxc').css('display', 'none');

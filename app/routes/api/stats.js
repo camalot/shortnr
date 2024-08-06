@@ -16,10 +16,4 @@ router.route('/api/stats/:id')
   .get(token.verify)
   .get(StatsController.statsById);
 
-router.route('/metrics')
-  .get(ui.allow)
-  .get(stats.scope)
-  .get(token.verify)
-  .get(StatsController.metrics);
-
 module.exports = router;

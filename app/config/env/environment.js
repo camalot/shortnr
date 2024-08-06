@@ -1,18 +1,17 @@
-
 function stripQuotes(str) {
   return str.replace(/^"(.*)"$/, '$1');
 }
 
 function buildMongoUrl() {
-  const mUrl = stripQuotes(process.env.NUS_MONGODB_URL || '');
+  const mUrl = stripQuotes(getEnvVarString('NUS_MONGODB_URL', ''));
   if (mUrl) {
     return mUrl;
   } else {
-    const host = stripQuotes(process.env.NUS_MONGODB_HOST || 'localhost');
-    const port = stripQuotes(process.env.NUS_MONGODB_PORT || '27017');
-    const user = stripQuotes(process.env.NUS_MONGODB_USERNAME || '');
-    const pass = stripQuotes(process.env.NUS_MONGODB_PASSWORD || '');
-    const authSource = stripQuotes(process.env.NUS_MONGODB_AUTHSOURCE || 'admin');
+    const host = stripQuotes(getEnvVarString('NUS_MONGODB_HOST', 'localhost'));
+    const port = stripQuotes(getEnvVarString('NUS_MONGODB_PORT', '27017'));
+    const user = stripQuotes(getEnvVarString('NUS_MONGODB_USERNAME', ''));
+    const pass = stripQuotes(getEnvVarString('NUS_MONGODB_PASSWORD', ''));
+    const authSource = stripQuotes(getEnvVarString('NUS_MONGODB_AUTHSOURCE', 'admin'));
     let auth = '';
 
     if (host && port) {
@@ -26,61 +25,74 @@ function buildMongoUrl() {
   return 'mongodb://localhost:27017/admin';
 }
 
-let token_required = false;
-if (process.env.NUS_TOKEN_REQUIRED === undefined || process.env.NUS_TOKEN_REQUIRED.toLowerCase() !== 'false') {
-  token_required = true;
+function getEnvVarBooleanDefault(envVar, defaultValue) {
+  if (process.env[envVar] === undefined) {
+    return defaultValue;
+  }
+  return process.env[envVar].toLowerCase() === 'true';
 }
 
-let token_create = false;
-if (process.env.NUS_ENABLE_TOKEN_CREATE === undefined || process.env.NUS_ENABLE_TOKEN_CREATE.toLowerCase() !== 'false') {
-  token_create = true;
+function getEnvVarList(envVar, defaultValue) {
+  if (process.env[envVar]) {
+    return process.env[envVar].split(',').map(h => h.trim());
+  }
+  return defaultValue;
 }
 
-let ui_enabled = false;
-if (process.env.NUS_UI_ENABLED === undefined || process.env.NUS_UI_ENABLED.toLowerCase() !== 'false') {
-  ui_enabled = true;
+function getEnvVarString(envVar, defaultValue) {
+  if (process.env[envVar]) {
+    return process.env[envVar];
+  }
+  return defaultValue;
 }
 
-let ui_allowed_hosts = [];
-if (process.env.NUS_UI_ALLOWED_HOSTS) {
-  // split and trim the hosts
-  ui_allowed_hosts = process.env.NUS_UI_ALLOWED_HOSTS.split(',').map(h => h.trim());
-} else {
-  ui_allowed_hosts = ui_enabled ? ['*'] : [];
+function getEnvVarInt(envVar, defaultValue) {
+  if (process.env[envVar]) {
+    let result = parseInt(process.env[envVar]);
+    if (isNaN(result)) {
+      return defaultValue;
+    } 
+    return result;
+  }
+  return defaultValue;
 }
+
+const ui_enabled = getEnvVarBooleanDefault('NUS_UI_ENABLED', true);
 
 module.exports = {
   log: {
     level: {
-      db: (process.env.NUS_LOG_LEVEL || 'WARN').toUpperCase(),
-      console: (process.env.NUS_LOG_LEVEL_CONSOLE || 'DEBUG').toUpperCase(),
+      db: getEnvVarString('NUS_LOG_LEVEL', 'WARN').toUpperCase(),
+      console: getEnvVarString('NUS_LOG_LEVEL_CONSOLE', 'DEBUG').toUpperCase(),
     },
   },
   mongo: {
     url: buildMongoUrl(),
-    database: process.env.NUS_MONGO_DATABASE || 'shortener_dev',
+    database: getEnvVarString('NUS_MONGO_DATABASE', 'shortener_dev'),
   },
   short: {
     length: {
-      min: parseInt(process.env.NUS_SHORT_ID_MIN_LENGTH) || 6,
-      max: parseInt(process.env.NUS_SHORT_ID_MAX_LENGTH) || 12
+      min: getEnvVarInt('NUS_SHORT_ID_MIN_LENGTH', 6),
+      max: getEnvVarInt('NUS_SHORT_ID_MAX_LENGTH', 12)
     },
     blocked: {
-      hosts: process.env.NUS_BLOCKED_HOSTS ? process.env.NUS_BLOCKED_HOSTS.split(',').map(h => h.trim()) : [],
-      protocols: process.env.NUS_BLOCKED_PROTOCOLS ? process.env.NUS_BLOCKED_PROTOCOLS.split(',').map(h => h.trim()) : []
-    }
-
+      hosts: getEnvVarList('NUS_SHORT_BLOCKED_HOSTS', []),
+      protocols: getEnvVarList('NUS_SHORT_BLOCKED_PROTOCOLS', []),
+    },
   },
   ui: {
     enabled: ui_enabled,
-    allow: ui_allowed_hosts,
+    allow: getEnvVarList('NUS_UI_ALLOWED_HOSTS', ui_enabled ? ['*'] : []),
+  },
+  metrics: {
+    requireToken: getEnvVarBooleanDefault('NUS_METRICS_REQUIRE_TOKEN', true),
   },
   tokens: {
-    prefix: process.env.NUS_TOKEN_PREFIX || 'nus_',
-    length: parseInt(process.env.NUS_TOKEN_LENGTH) || 36,
+    prefix: getEnvVarString('NUS_TOKEN_PREFIX', 'nus_'),
+    length: getEnvVarInt('NUS_TOKEN_LENGTH', 36),
     create: {
-      enabled: token_create,
+      enabled: getEnvVarBooleanDefault('NUS_ENABLE_TOKEN_CREATE', true),
     },
-    required: token_required
+    required: getEnvVarBooleanDefault('NUS_TOKEN_REQUIRED', true)
   }
 };

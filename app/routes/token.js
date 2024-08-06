@@ -1,5 +1,5 @@
-const TokenController = require('../../api/controllers/TokenController');
-const token = require('../../api/middleware/token');
+const TokenController = require('../api/controllers/TokenController');
+const token = require('../api/middleware/token');
 const { Router } = require('express');
 
 const router = Router();
