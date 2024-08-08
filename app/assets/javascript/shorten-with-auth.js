@@ -1,5 +1,33 @@
 
+$(() => {
+  if (!localStorage.getItem('token')) {
+    generateToken();
+  }
 
+  $('#token').val(localStorage.getItem('token'));
+});
+
+function generateToken() {
+  $.ajax({
+    url: '/api/token',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    data: JSON.stringify({ name: randomizer(12, 12) }),
+    type: 'POST',
+    dataType: 'json',
+    success(data) {
+      localStorage.setItem('token', data.token);
+      $('#token').val(data.token);
+      toastr.success('Token generated');
+    },
+    error(xhr, status, err) {
+      console.error(`Error: ${status}`);
+      console.error(`Error: ${err}`);
+      toastr.error('Error generating token');
+    }
+  });
+}
 
 function randomizer(min, max) {
   const source = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -31,24 +59,18 @@ $('.btn-shorten').on('click', function() {
       const resultHTML = `<a class="result" href="${data.url}" target="_blank">${data.url}</a>`;
       $('#link').hide().html(resultHTML).fadeIn('slow');
       $('#url').val('');
+      toastr.success(`URL shortened to ${resultHTML}`, { timeOut: -1 });
     },
+    error: function(xhr, status, err) {
+      toastr.error('Error shortening URL');
+      console.error(`Error: ${status}`);
+      console.error(`Error: ${err}`);
+    }
   });
 });
 
 $('.btn-token').on('click', function() {
-  console.log('clicked');
-  $.ajax({
-    url: '/api/token',
-    headers: {
-      'Content-Type': 'application/json',
-    },
-    type: 'POST',
-    dataType: 'json',
-    success(data) {
-      localStorage.setItem('token', data.token);
-      $('#token').val(data.token);
-    },
-  });
+  generateToken();
 });
 
 $('.btn.btn-token-showhide').on('click', function() {
@@ -72,21 +94,34 @@ $('.btn.btn-token-showhide').on('click', function() {
       .addClass('fa-eye');
     $('#token').attr('type', 'password');
   }
+  $('#token').focus();
 });
 
+$('#token').on('focus', function() {
+  // select the text when the input is focused
+  $(this).select();
+})
 
-// $('.btn-copy.btn-token-copy').on('click', () => {
-//   const $temp = $('<input style="display:none;"/>');
-//   $('body').append($temp);
-//   $temp.val($('#token').text()).select();
-//   document.execCommand('copy');
-//   $temp.remove();
+$(document).on('click', '.btn-copy.btn-token-copy', function () {
+  const $token = $('#token');
+  const original_type = $token.attr('type');
 
-//   let range = document.createRange();
-//   range.selectNode(document.getElementById("a"));
-//   window.getSelection().removeAllRanges(); // clear current selection
-//   window.getSelection().addRange(range); // to select text
-//   document.execCommand("copy");
-//   window.getSelection().removeAllRanges();// to deselect
-// });
+  // force the input to be text so we can copy the value
+  $token.attr('type', 'text');
+  let value = $token.val();
+  $token.attr('type', original_type);
+  // create input element with jquery
+  const $temp = $('<input>');
+  $temp
+    .css('position', 'absolute')
+    .css('left', '-1000px')
+    .val(value);
 
+  $('body').append($temp);
+  $temp.select();
+  document.execCommand("copy");
+  $temp.remove();
+  $token.select();
+  toastr.success('Token copied to clipboard');
+
+});

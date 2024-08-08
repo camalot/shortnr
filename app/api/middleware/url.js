@@ -16,27 +16,34 @@ async function registerScopes(req, res, route, method, scopes) {
 }
 
 async function blocked(req, res, next) {
-  const targetUrl = req.body.url.replace(/\/$/, '');
-  const blockedHosts = config.short.blocked.hosts;
-  const blockedProtocols = config.short.blocked.protocols.map(p => p.replace(':', ''));
+  try {
+    const targetUrl = req.body.url.replace(/\/$/, '');
+    const blockedHosts = config.short.blocked.hosts;
+    const blockedProtocols = config.short.blocked.protocols.map(p => p.replace(':', ''));
 
-  // Check if the targetUrl is in the blockedHosts list
-  // get the protocol and host from the targetUrl
-  const url = new URL(targetUrl);
-  const protocol = url.protocol.replace(':', '');
-  // remove port from host
-  const hostParts = url.host.split(':');
-  const host = hostParts[0];
-  let port = null;
-  if (hostParts.length > 1) {
-    port = hostParts[1];
-  }
+    // Check if the targetUrl is in the blockedHosts list
+    // get the protocol and host from the targetUrl
+    url = targetUrl;
+    // get protocol from url
+    const protocol = url.split(':')[0].replace(':', '');
+    // get host parts from url
+    const domainPort = url.split(':')[1].replace(/^\/\//gi, '').split('/')[0];
+    const hostParts = domainPort.split(':');
+    const host = hostParts[0];
+    let port = null;
+    if (hostParts.length > 1) {
+      port = hostParts[1];
+    }
 
-  if (blockedProtocols.includes(protocol) || blockedHosts.includes(host)) {
-    await logger.warn('UrlMiddleware.blocked', `Blocked request to ${targetUrl}`);
-    return res.status(403).json({ error: 'This URL is not allowed.' });
+    if (blockedProtocols.includes(protocol) || blockedHosts.includes(host)) {
+      await logger.warn('UrlMiddleware.blocked', `Blocked request to ${targetUrl}`);
+      return res.status(403).json({ error: 'This URL is not allowed.' });
+    }
+    return next();
+  } catch (error) {
+    await logger.error('UrlMiddleware.blocked', error, error.stack);
+    return next();
   }
-  return next();
 }
 
 async function scope(req, res, next) {

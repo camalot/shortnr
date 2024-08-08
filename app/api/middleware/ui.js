@@ -24,6 +24,7 @@ async function allow(req, res, next) {
     return next();
   }
 
+  await logger.warn('UiMiddleware.allow', `Blocked request to ${reqestHostName}`);
   return res.status(404).end();
 }
 

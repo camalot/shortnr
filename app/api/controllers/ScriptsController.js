@@ -9,7 +9,7 @@ async function config(req, res) {
     delete settings.mongo;
     delete settings.short.blocked;
     delete settings.ui.allow;
-
+    res.setHeader('Content-Type', 'application/javascript');
     return res.status(200).send(`window.NUS_CONFIG = ${JSON.stringify(settings)};`).end();
   } catch (err) {
     await logger.error(
@@ -29,9 +29,12 @@ async function scripts(req, res) {
     ];
 
     if (settings.tokens.required) {
-      scripts.push('generate-token.js');
-      scripts.push('shorten-with-auth.js');
+      scripts = [
+        'shorten-with-auth.js',
+      ];
     }
+
+    res.setHeader('Content-Type', 'application/javascript');
 
     // read all scripts and combine them
     let script = '';
