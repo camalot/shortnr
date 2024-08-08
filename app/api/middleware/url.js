@@ -25,9 +25,18 @@ async function blocked(req, res, next) {
     // get the protocol and host from the targetUrl
     url = targetUrl;
     // get protocol from url
-    const protocol = url.split(':')[0].replace(':', '');
+    if (!url || url.length === 0) {
+      await logger.warn('UrlMiddleware.blocked', 'URL is required.');
+      return res.status(400).json({ error: 'URL is required.' });
+    }
+    const splits = url.split(':');
+    if (!splits || splits.length < 2) {
+      await logger.warn('UrlMiddleware.blocked', `Invalid URL: ${targetUrl}`);
+      return res.status(400).json({ error: 'Invalid URL.' });
+    }
+    const protocol = splits[0].replace(':', '');
     // get host parts from url
-    const domainPort = url.split(':')[1].replace(/^\/\//gi, '').split('/')[0];
+    const domainPort = splits[1].replace(/^\/\//gi, '').split('/')[0];
     const hostParts = domainPort.split(':');
     const host = hostParts[0];
     let port = null;
