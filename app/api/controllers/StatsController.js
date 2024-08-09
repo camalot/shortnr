@@ -40,6 +40,7 @@ async function statsById(req, res) {
 async function metrics(req, res) {
   try {
     const Stats = new StatsMongoClient();
+    await Stats.connect();
     const redirects = await Stats.getRedirectCounts();
     const shortens = await Stats.getShortenCounts();
     const logs = await Stats.getLogCounts();
@@ -71,11 +72,13 @@ async function metrics(req, res) {
     res.setHeader('Connection', 'close');
     
     res.send(metrics.join('\n'));
-
+    
     return res.status(200).end();
   } catch (err) {
     await logger.error('StatsController.metrics', err.message, { stack: err.stack });
     return res.status(500).end();
+  } finally {
+    await Stats.close();
   }
 }
 

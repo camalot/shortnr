@@ -103,7 +103,6 @@ class LogsMongoClient extends DatabaseMongoClient {
       if (reqLogLevel >= consoleLogLevel) {
         this._consoleWriter(level, source, message, data);
       }
-
       if (result && (!result.acknowledged || !result.insertedId)) {
         return false;
       }
@@ -111,6 +110,8 @@ class LogsMongoClient extends DatabaseMongoClient {
     } catch (err) {
       this._consoleWriter('FATAL', 'LogsMongoClient.write', err.message, { stack: err.stack });
       return false;
+    } finally {
+      await this.close();
     }
   }
 

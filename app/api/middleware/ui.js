@@ -5,11 +5,13 @@ const logger = new LogsMongoClient();
 
 async function allow(req, res, next) {
   if (!config.ui.enabled) {
+    await logger.warn('UiMiddleware.allow', 'UI is disabled.');
     return res.status(404).end();
   }
 
   const allowList = config.ui.allow || ['*'];
   if (allowList.includes('*')) {
+    await logger.debug('UiMiddleware.allow', 'Allowing all requests.');
     return next();
   }
 
