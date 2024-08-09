@@ -4,8 +4,8 @@ const LogsMongoClient = require('../mongo/Logs');
 const logger = new LogsMongoClient();
 
 async function stats(req, res) {
+  const Stats = new StatsMongoClient();
   try {
-    const Stats = new StatsMongoClient();
     const results = await Stats.getRedirectCounts();
 
     return res.status(200).json(results);
@@ -16,12 +16,14 @@ async function stats(req, res) {
       { stack: err.stack, headers: req.headers, body: req.body, query: req.query, params: req.params },
     );
     return res.status(500).end();
+  } finally {
+    await Stats.close();
   }
 }
 
 async function statsById(req, res) {
+  const Stats = new StatsMongoClient();
   try {
-    const Stats = new StatsMongoClient();
 
     const id = req.params.id;
     const results = await Stats.getRedirectCountsForShort(id);
@@ -34,12 +36,14 @@ async function statsById(req, res) {
       { stack: err.stack, headers: req.headers, body: req.body, query: req.query, params: req.params },
     );
     return res.status(500).end();
+  } finally {
+    await Stats.close();
   }
 }
 
 async function metrics(req, res) {
+  const Stats = new StatsMongoClient();
   try {
-    const Stats = new StatsMongoClient();
     await Stats.connect();
     const redirects = await Stats.getRedirectCounts();
     const shortens = await Stats.getShortenCounts();
