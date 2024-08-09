@@ -1,3 +1,5 @@
+require('dotenv').config();
+
 function stripQuotes(str) {
   return str.replace(/^"(.*)"$/, '$1');
 }

@@ -17,7 +17,12 @@ class DatabaseMongoClient {
   }
 
   async close() {
+    if (!this.client) {
+      return;
+    }
     await this.client.close();
+    this.client = null;
+    this.db = null;
   }
 }
 

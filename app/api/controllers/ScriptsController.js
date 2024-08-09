@@ -1,4 +1,4 @@
-const settings = require('../../config');
+const configs = require('../../config');
 const fs = require('fs');
 const LogsMongoClient = require('../mongo/Logs');
 
@@ -6,6 +6,8 @@ const logger = new LogsMongoClient();
 
 async function config(req, res) {
   try {
+    // copy to another object and remove sensitive data
+    let settings = JSON.parse(JSON.stringify(configs));
     delete settings.mongo;
     delete settings.short.blocked;
     delete settings.ui.allow;
@@ -28,7 +30,7 @@ async function scripts(req, res) {
       'shorten-without-auth.js',
     ];
 
-    if (settings.tokens.required) {
+    if (configs.tokens.required) {
       scripts = [
         'shorten-with-auth.js',
       ];

@@ -1,6 +1,6 @@
 const { /*MongoClient,*/ ObjectId } = require('mongodb');
 const DatabaseMongoClient = require('./Database');
-const config = require('../../config/env');
+const config = require('../../config');
 const randomizer = require('../helpers/randomizer');
 const LogsMongoClient = require('./Logs');
 
@@ -20,7 +20,6 @@ class TokensMongoClient extends DatabaseMongoClient {
       }
       await logger.debug('TokensMongoClient.valid', 'Token required: checking token');
       await this.connect();
-      const collection = this.db.collection(this.collection);
       if (token) {
         const result = await this.findOne({ token });
         await logger.debug('TokensMongoClient.valid', 'FindOne result', { result });

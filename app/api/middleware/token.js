@@ -1,4 +1,4 @@
-const config = require('../../config/env');
+const config = require('../../config');
 const TokensMongoClient = require('../mongo/Tokens');
 const LogsMongoClient = require('../mongo/Logs');
 

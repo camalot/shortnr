@@ -49,6 +49,8 @@ async function redirect(req, res) {
   }
 
   await logger.warn('UrlController.redirect', `Short url not found: ${id}`);
+  await Url.close();
+  await Tracking.close();
   return res.status(404).end();
 }
 
