@@ -6,6 +6,7 @@ const TokensMongoClient = require('./Tokens');
 const LogsMongoClient = require('./Logs');
 
 const logger = new LogsMongoClient();
+const MODULE = 'UrlsMongoClient';
 
 class UrlsMongoClient extends DatabaseMongoClient {
   constructor() {
@@ -14,6 +15,7 @@ class UrlsMongoClient extends DatabaseMongoClient {
   }
 
   async get(id) {
+    const METHOD = 'get';
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
@@ -27,12 +29,13 @@ class UrlsMongoClient extends DatabaseMongoClient {
 
       return null;
     } catch (err) {
-      await logger.error('UrlsMongoClient.get', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }
 
   async create(url, tokenId) {
+    const METHOD = 'create';
     try {
       await this.connect();
       // let tokenId = null;
@@ -63,7 +66,7 @@ class UrlsMongoClient extends DatabaseMongoClient {
         if (!result) {
           break;
         }
-        await logger.debug('UrlsMongoClient.create', 'id is not unique, generating new id');
+        await logger.debug(`${MODULE}.${METHOD}`, 'id is not unique, generating new id');
         id = randomizer.generate(min, max);
       };
 
@@ -78,12 +81,13 @@ class UrlsMongoClient extends DatabaseMongoClient {
       }
       return null;
     } catch (err) {
-      await logger.error('UrlsMongoClient.create', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }
 
   async findOne(query) {
+    const METHOD = 'findOne';
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
@@ -94,7 +98,7 @@ class UrlsMongoClient extends DatabaseMongoClient {
       delete result._id;
       return result;
     } catch (err) {
-      await logger.error('UrlsMongoClient.findOne', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }

@@ -2,8 +2,10 @@ const config = require('../../config');
 const LogsMongoClient = require('../mongo/Logs');
 
 const logger = new LogsMongoClient();
+const MODULE = 'UrlMiddleware';
 
 async function registerScopes(req, res, route, method, scopes) {
+  const METHOD = 'registerScopes';
   if (!res.locals[route]) {
     res.locals[route] = {};
   }
@@ -11,11 +13,12 @@ async function registerScopes(req, res, route, method, scopes) {
     res.locals[route][method.toLowerCase()] = {};
   }
 
-  await logger.debug('UrlMiddleware.registerScopes', `Registering scopes: ${JSON.stringify(scopes)} for ${route}}:${method.toUpperCase()}`);
+  await logger.debug(`${MODULE}.${METHOD}`, `Registering scopes: ${JSON.stringify(scopes)} for ${route}}:${method.toUpperCase()}`);
   res.locals[route][method].scopes = scopes;
 }
 
 async function blocked(req, res, next) {
+  const METHOD = 'blocked';
   try {
     const targetUrl = req.body.url.replace(/\/$/, '');
     const blockedHosts = config.short.blocked.hosts;
@@ -26,12 +29,12 @@ async function blocked(req, res, next) {
     url = targetUrl;
     // get protocol from url
     if (!url || url.length === 0) {
-      await logger.warn('UrlMiddleware.blocked', 'URL is required.');
+      await logger.warn(`${MODULE}.${METHOD}`, 'URL is required.');
       return res.status(400).json({ error: 'URL is required.' });
     }
     const splits = url.split(':');
     if (!splits || splits.length < 2) {
-      await logger.warn('UrlMiddleware.blocked', `Invalid URL: ${targetUrl}`);
+      await logger.warn(`${MODULE}.${METHOD}`, `Invalid URL: ${targetUrl}`);
       return res.status(400).json({ error: 'Invalid URL.' });
     }
     const protocol = splits[0].replace(':', '');
@@ -45,12 +48,12 @@ async function blocked(req, res, next) {
     }
 
     if (blockedProtocols.includes(protocol) || blockedHosts.includes(host)) {
-      await logger.warn('UrlMiddleware.blocked', `Blocked request to ${targetUrl}`);
+      await logger.warn(`${MODULE}.${METHOD}`, `Blocked request to ${targetUrl}`);
       return res.status(403).json({ error: 'This URL is not allowed.' });
     }
     return next();
   } catch (error) {
-    await logger.error('UrlMiddleware.blocked', error, error.stack);
+    await logger.error(`${MODULE}.${METHOD}`, error, error.stack);
     return next();
   }
 }

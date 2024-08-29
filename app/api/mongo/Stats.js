@@ -4,6 +4,7 @@ const config = require('../../config/env');
 const LogsMongoClient = require('./Logs');
 
 const logger = new LogsMongoClient();
+const MODULE = 'StatsMongoClient';
 
 class StatsMongoClient extends DatabaseMongoClient { 
   constructor() {
@@ -15,42 +16,46 @@ class StatsMongoClient extends DatabaseMongoClient {
   }
 
   async getRedirectCountsForShort(id) {
+    const METHOD = 'getRedirectCountsForShort';
     try {
       return this.getTrackingCountsByMatch([
         { $match: { id, action: 'url.redirect' } }, 
         { $group: { _id: '$id', total: { $sum: 1 } } },
       ]);
     } catch (err) {
-      logger.error('StatsMongoClient.getRedirectCountsForShort', err.message, { stack: err.stack });
+      logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }
 
   async getRedirectCounts() {
+    const METHOD = 'getRedirectCounts';
     try {
       return this.getTrackingCountsByMatch([ 
         { $match: { action: 'url.redirect' } },
         { $group: { _id: { id: '$id', token_id: { '$ifNull': ['$created_by', 'anonymous'] } }, total: { $sum: 1 } } }
       ]);
     } catch (err) {
-      await logger.error('StatsMongoClient.getRedirectCounts', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }
 
   async getShortenCounts() {
+    const METHOD = 'getShortenCounts';
     try {
       return this.getTrackingCountsByMatch([
         { $match: { action: 'url.shorten', "new": true } },
         { $group: { _id: { token_id: { '$ifNull': [ '$created_by', 'anonymous' ] } }, total: { $sum: 1 } } },
       ]);
     } catch (err) {
-      await logger.error('StatsMongoClient.getRedirectCounts', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }
 
   async getLogCounts() {
+    const METHOD = 'getLogCounts';
     try {
       await this.connect();
       const collection = this.db.collection(this.logs);
@@ -62,12 +67,13 @@ class StatsMongoClient extends DatabaseMongoClient {
       }
       return results;
     } catch (err) {
-      await logger.error('StatsMongoClient.getRedirectCounts', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }
 
   async getTokenCounts() {
+    const METHOD = 'getTokenCounts';
     try {
       await this.connect();
       const collection = this.db.collection(this.tokens);
@@ -76,12 +82,13 @@ class StatsMongoClient extends DatabaseMongoClient {
       ]).toArray();
       return results;
     } catch (err) {
-      await logger.error('StatsMongoClient.getRedirectCounts', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }
 
   async getTrackingCounts() {
+    const METHOD = 'getTrackingCounts';
     try {
       await this.connect();
       const collection = this.db.collection(this.tracking);
@@ -91,7 +98,7 @@ class StatsMongoClient extends DatabaseMongoClient {
       ]).toArray();
       return results;
     } catch (err) {
-      await logger.error('StatsMongoClient.getRedirectCounts', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }

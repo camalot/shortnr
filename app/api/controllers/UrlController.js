@@ -5,8 +5,10 @@ const TrackingMongoClient = require('../mongo/Tracking');
 const LogsMongoClient = require('../mongo/Logs');
 
 const logger = new LogsMongoClient();
+const MODULE = 'UrlController';
 
 async function shorten(req, res) {
+  const METHOD = 'shorten';
   try {
     const Url = new UrlsMongoClient();
     const tokenId = res.locals.token ? res.locals.token.id : null;
@@ -23,21 +25,22 @@ async function shorten(req, res) {
       }
 
       if (!short) {
-        await logger.warn('UrlController.shorten', 'Invalid shorten payload.');
+        await logger.warn(`${MODULE}.${METHOD}`, 'Invalid shorten payload.');
         return res.status(500).json({ error: 'Invalid shorten payload.' });
       }
 
       return createShortResponse(req, res, short, isNew);
     }
-    await logger.warn('UrlController.shorten', 'Invalid shorten payload.');
+    await logger.warn(`${MODULE}.${METHOD}`, 'Invalid shorten payload.');
     return res.status(400).json({ error: 'Invalid shorten payload.' });
   } catch (err) {
-    await logger.error('UrlController.shorten', err, { stack: err.stack });
+    await logger.error(`${MODULE}.${METHOD}`, err, { stack: err.stack });
     return res.status(500).json({ error: 'Internal server error.' });
   }
 }
 
 async function redirect(req, res) {
+  const METHOD = 'redirect';
   const Url = new UrlsMongoClient();
   const Tracking = new TrackingMongoClient();
   const { id } = req.params;
@@ -48,13 +51,14 @@ async function redirect(req, res) {
     return res.redirect(short.target_url);
   }
 
-  await logger.warn('UrlController.redirect', `Short url not found: ${id}`);
+  await logger.warn(`${MODULE}.${METHOD}`, `Short url not found: ${id}`);
   await Url.close();
   await Tracking.close();
   return res.status(404).end();
 }
 
 async function createShortResponse(req, res, short, isNew) {
+  const METHOD = 'createShortResponse';
   const Tracking = new TrackingMongoClient();
 
   const sourceHost = requests.getSourceHost(req);
@@ -71,7 +75,7 @@ async function createShortResponse(req, res, short, isNew) {
     new: isNew,
     created_by: short.created_by,
   };
-  await logger.debug('UrlController.shorten', JSON.stringify(output));
+  await logger.debug(`${MODULE}.${METHOD}`, JSON.stringify(output));
   await Tracking.create(req, { action: 'url.shorten', ...output });
   delete output.created_by;
   await Tracking.close();

@@ -5,6 +5,7 @@ const randomizer = require('../helpers/randomizer');
 const LogsMongoClient = require('./Logs');
 
 const logger = new LogsMongoClient();
+const MODULE = 'TokensMongoClient';
 
 class TokensMongoClient extends DatabaseMongoClient {
   constructor() {
@@ -13,18 +14,19 @@ class TokensMongoClient extends DatabaseMongoClient {
   }
 
   async valid(token) {
+    const METHOD = 'valid';
     try {
       if (!config.tokens.required) {
-        await logger.debug('TokensMongoClient.valid', 'Token not required: returning true');
+        await logger.debug(`${MODULE}.${METHOD}`, 'Token not required: returning true');
         return true;
       }
-      await logger.debug('TokensMongoClient.valid', 'Token required: checking token');
+      await logger.debug(`${MODULE}.${METHOD}`, 'Token required: checking token');
       await this.connect();
       if (token) {
         const result = await this.findOne({ token });
-        await logger.debug('TokensMongoClient.valid', 'FindOne result', { result });
+        await logger.debug(`${MODULE}.${METHOD}`, 'FindOne result', { result });
         if (result) {
-          await logger.debug('TokensMongoClient.valid', 'Token found', { token_id: result.id.toString() });
+          await logger.debug(`${MODULE}.${METHOD}`, 'Token found', { token_id: result.id.toString() });
           return result.enabled;
         }
         return false;
@@ -32,12 +34,13 @@ class TokensMongoClient extends DatabaseMongoClient {
 
       return false;
     } catch (err) {
-      await logger.error('TokensMongoClient.valid', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return false;
     }
   }
 
   async destroy(id, token) {
+    const METHOD = 'destroy';
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
@@ -52,12 +55,13 @@ class TokensMongoClient extends DatabaseMongoClient {
       }
       return false;
     } catch (err) {
-      await logger.error('TokensMongoClient.destroy', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return false;
     }
   }
 
   async create(name) {
+    const METHOD = 'create';
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
@@ -89,12 +93,13 @@ class TokensMongoClient extends DatabaseMongoClient {
       }
       return null;
     } catch (err) {
-      await logger.error('TokensMongoClient.create', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }
 
   async hasScope(token, scope) {
+    const METHOD = 'hasScope';
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
@@ -106,19 +111,20 @@ class TokensMongoClient extends DatabaseMongoClient {
         return result.scopes.includes(scope);
       }
     } catch (err) {
-      await logger.error('TokensMongoClient.hasScope', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return false;
     }
   }
 
   async grantScope(token, scopes) {
+    const METHOD = 'grantScope';
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
 
       const tokenResult = this.findOne({ token });
       if (!tokenResult) {
-        await logger.warn('TokensMongoClient.grant', 'Token not found', { token });
+        await logger.warn(`${MODULE}.${METHOD}`, 'Token not found', { token });
         return false;
       }
 
@@ -129,11 +135,11 @@ class TokensMongoClient extends DatabaseMongoClient {
       let updateResult = false;
       for (const scope of scopes) {
         if (await this.hasScope(token, scope)) {
-          await logger.debug('TokensMongoClient.grant', 'Token already has scopes', { token: tokenResult, scope });
+          await logger.debug(`${MODULE}.${METHOD}`, 'Token already has scopes', { token: tokenResult, scope });
           continue;
         }
         const result = await collection.updateOne({ token }, { $push: { scopes: scope } });
-        await logger.debug('TokensMongoClient.grant', 'Update result', { result });
+        await logger.debug(`${MODULE}.${METHOD}`, 'Update result', { result });
         if (result.acknowledged && result.modifiedCount > 0) {
           updateResult = true;
         } else {
@@ -146,19 +152,20 @@ class TokensMongoClient extends DatabaseMongoClient {
       }
       return null;
     } catch (err) {
-      await logger.error('TokensMongoClient.grant', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }
 
   async revokeScope(token, scopes) {
+    const METHOD = 'revokeScope';
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
 
       const tokenResult = this.findOne({ token });
       if (!tokenResult) {
-        await logger.warn('TokensMongoClient.grant', 'Token not found', { token });
+        await logger.warn(`${MODULE}.${METHOD}`, 'Token not found', { token });
         return false;
       }
 
@@ -168,11 +175,11 @@ class TokensMongoClient extends DatabaseMongoClient {
       let updateResult = false;
       for (const scope of scopes) {
         if (!this.hasScope(token, scope)) {
-          await logger.debug('TokensMongoClient.grant', 'Token already missing scope', { token: tokenResult, scope });
+          await logger.debug(`${MODULE}.${METHOD}`, 'Token already missing scope', { token: tokenResult, scope });
           continue;
         }
         const result = await collection.updateOne({ token }, { $pull: { scopes: scope } });
-        await logger.debug('TokensMongoClient.grant', 'Update result', { result });
+        await logger.debug(`${MODULE}.${METHOD}`, 'Update result', { result });
         if (result.acknowledged && result.modifiedCount > 0) {
           updateResult = true;
         } else {
@@ -185,12 +192,13 @@ class TokensMongoClient extends DatabaseMongoClient {
         return null;
       }
     } catch (err) {
-      await logger.error('TokensMongoClient.revoke', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }
 
   async get(id) {
+    const METHOD = 'get';
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
@@ -205,12 +213,13 @@ class TokensMongoClient extends DatabaseMongoClient {
 
       return null;
     } catch (err) {
-      await logger.error('TokensMongoClient.get', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }
 
   async findOne(query) {
+    const METHOD = 'findOne';
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
@@ -222,7 +231,7 @@ class TokensMongoClient extends DatabaseMongoClient {
       }
       return null;
     } catch (err) {
-      await logger.error('TokensMongoClient.findOne', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
     }
   }

@@ -5,6 +5,7 @@ const LogsMongoClient = require('./Logs');
 const requests = require('../helpers/requests');
 
 const logger = new LogsMongoClient();
+const MODULE = 'TrackingMongoClient';
 
 class TrackingMongoClient extends DatabaseMongoClient {
   constructor() {
@@ -13,6 +14,7 @@ class TrackingMongoClient extends DatabaseMongoClient {
   }
 
   async create(req, payload) {
+    const METHOD = 'create';
     try {
       await this.connect();
       if (req) {
@@ -51,7 +53,7 @@ class TrackingMongoClient extends DatabaseMongoClient {
       }
       return false;
     } catch (err) {
-      await logger.error('TrackingMongoClient.create', err.message, { stack: err.stack });
+      await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return false;
     }
   }

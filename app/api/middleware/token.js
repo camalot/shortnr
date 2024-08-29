@@ -3,10 +3,10 @@ const TokensMongoClient = require('../mongo/Tokens');
 const LogsMongoClient = require('../mongo/Logs');
 
 const logger = new LogsMongoClient();
-
 const MODULE = 'TokenMiddleware';
 
 async function registerScopes(req, res, route, method, scopes) {
+  const METHOD = 'registerScopes';
   if (!res.locals[route]) {
     res.locals[route] = {};
   }
@@ -14,7 +14,7 @@ async function registerScopes(req, res, route, method, scopes) {
     res.locals[route][method.toLowerCase()] = {};
   }
 
-  await logger.debug('TokenMiddleware.registerScopes', `Registering scopes: ${JSON.stringify(scopes)} for ${route}}:${method.toUpperCase()}`);
+  await logger.debug(`${MODULE}.${METHOD}`, `Registering scopes: ${JSON.stringify(scopes)} for ${route}}:${method.toUpperCase()}`);
   res.locals[route][method].scopes = scopes;
 }
 
@@ -78,16 +78,17 @@ async function scope(req, res, next) {
 }
 
 async function enabled(req, res, next) {
+  const METHOD = 'enabled';
   if (!config.tokens.create.enabled) {
-    await logger.warn('TokenMiddleware.enabled', 'Token creation is disabled, but request was made.');
+    await logger.warn(`${MODULE}.${METHOD}`, 'Token creation is disabled, but request was made.');
     return res.status(404).end();
   }
   return next();
 }
 
 async function verify(req, res, next) {
-  const FUNC = 'verify';
-  await logger.debug(`${MODULE}.${FUNC}`, 'Verifying token.');
+  const METHOD = 'verify';
+  await logger.debug(`${MODULE}.${METHOD}`, 'Verifying token.');
   let accessToken = req.headers['x-access-token'];
   if (!accessToken) {
     const authorization = req.headers['authorization'];
@@ -103,7 +104,7 @@ async function verify(req, res, next) {
   }
 
   if (!config.tokens.required && !accessToken) {
-    await logger.info(`${MODULE}.${FUNC}`, 'Token is not required. Skipping Validation.');
+    await logger.info(`${MODULE}.${METHOD}`, 'Token is not required. Skipping Validation.');
     res.locals.token = null;
     return next();
   }
@@ -116,7 +117,7 @@ async function verify(req, res, next) {
   if ((!requiredScopes || requiredScopes.length === 0) && !accessToken) {
     return next();
   } else if (!accessToken && requiredScopes && requiredScopes.length > 0) {
-    await logger.warn(`${MODULE}.${FUNC}`, 'Token required for route, but not provided.');
+    await logger.warn(`${MODULE}.${METHOD}`, 'Token required for route, but not provided.');
     return res.status(403).json({ error: 'Token required for route, but not provided.', missingScopes: requiredScopes });
   }
 
@@ -124,7 +125,7 @@ async function verify(req, res, next) {
 
   const token = await Tokens.findOne({ token: accessToken });
   if (!token) {
-    await logger.warn(`${MODULE}.${FUNC}`, `Token not found. Token: ${accessToken}`);
+    await logger.warn(`${MODULE}.${METHOD}`, `Token not found. Token: ${accessToken}`);
     return res.status(403).json({ error: 'Token not found.' });
   }
 
@@ -138,7 +139,7 @@ async function verify(req, res, next) {
 
       let hasScope = await Tokens.hasScope(token.token, scope);
       if (!hasScope) {
-        await logger.debug(`${MODULE}.${FUNC}`, `Token does not have required scope: ${scope}`);
+        await logger.debug(`${MODULE}.${METHOD}`, `Token does not have required scope: ${scope}`);
         missingScopes.push(scope);
       }
     }
@@ -147,16 +148,16 @@ async function verify(req, res, next) {
       return next();
     }
 
-    await logger.warn(`${MODULE}.${FUNC}`, 'Token does not have required scope.');
+    await logger.warn(`${MODULE}.${METHOD}`, 'Token does not have required scope.');
     return res.status(403).json({ error: 'Token does not have required scope.', missingScopes });
   } else {
-    await logger.debug(`${MODULE}.${FUNC}`, 'No scopes required for route.');
+    await logger.debug(`${MODULE}.${METHOD}`, 'No scopes required for route.');
     if (valid) {
       return next();
     }
   }
 
-  await logger.warn(`${MODULE}.${FUNC}`, 'Invalid token provided.');
+  await logger.warn(`${MODULE}.${METHOD}`, 'Invalid token provided.');
   return res.status(403).json({ error: 'Invalid token provided.' });
 }
 

@@ -2,16 +2,18 @@ const config = require('../../config/env');
 const LogsMongoClient = require('../mongo/Logs');
 
 const logger = new LogsMongoClient();
+const MODULE = 'UiMiddleware';
 
 async function allow(req, res, next) {
+  const METHOD = 'allow';
   if (!config.ui.enabled) {
-    await logger.warn('UiMiddleware.allow', 'UI is disabled.');
+    await logger.warn(`${MODULE}.${METHOD}`, 'UI is disabled.');
     return res.status(404).end();
   }
 
   const allowList = config.ui.allow || ['*'];
   if (allowList.includes('*')) {
-    await logger.debug('UiMiddleware.allow', 'Allowing all requests.');
+    await logger.debug(`${MODULE}.${METHOD}`, 'Allowing all requests.');
     return next();
   }
 
@@ -26,7 +28,7 @@ async function allow(req, res, next) {
     return next();
   }
 
-  await logger.warn('UiMiddleware.allow', `Blocked request to ${reqestHostName}`);
+  await logger.warn(`${MODULE}.${METHOD}`, `Blocked request to ${reqestHostName}`);
   return res.status(404).end();
 }
 

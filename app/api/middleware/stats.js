@@ -2,8 +2,10 @@ const config = require('../../config/env');
 const LogsMongoClient = require('../mongo/Logs');
 
 const logger = new LogsMongoClient();
+const MODULE = 'StatsMiddleware';
 
 async function registerScopes(req, res, route, method, scopes) {
+  const METHOD = 'registerScopes';
   if (!res.locals[route]) {
     res.locals[route] = {};
   }
@@ -11,12 +13,13 @@ async function registerScopes(req, res, route, method, scopes) {
     res.locals[route][method.toLowerCase()] = {};
   }
 
-  await logger.debug('StatsMiddleware.registerScopes', `Registering scopes: ${JSON.stringify(scopes)} for ${route}}:${method.toUpperCase()}`);
+  await logger.debug(`${MODULE}.${METHOD}`, `Registering scopes: ${JSON.stringify(scopes)} for ${route}}:${method.toUpperCase()}`);
   res.locals[route][method].scopes = scopes;
 }
 
 async function scope(req, res, next) {
-  let activeRoute = req.route.path;
+  const METHOD = 'scope';
+  const activeRoute = req.route.path;
 
   if (!res.locals[activeRoute]) {
     res.locals[activeRoute] = {};
@@ -39,7 +42,7 @@ async function scope(req, res, next) {
     case '/api/stats/:id':
     case '/metrics':
       if (config.metrics.tokenRequired && config.tokens.required) {
-        await logger.debug('StatsMiddleware.scope', 'Token and stats required');
+        await logger.debug(`${MODULE}.${METHOD}`, 'Token and stats required');
         scopes = ['stats.read'];
       } 
 
