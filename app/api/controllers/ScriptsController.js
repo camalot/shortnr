@@ -3,8 +3,10 @@ const fs = require('fs');
 const LogsMongoClient = require('../mongo/Logs');
 
 const logger = new LogsMongoClient();
+const MODULE = 'ScriptsController';
 
 async function config(req, res) {
+  const METHOD = 'config';
   try {
     // copy to another object and remove sensitive data
     let settings = JSON.parse(JSON.stringify(configs));
@@ -15,7 +17,7 @@ async function config(req, res) {
     return res.status(200).send(`window.NUS_CONFIG = ${JSON.stringify(settings)};`).end();
   } catch (err) {
     await logger.error(
-      'ScriptsController.config',
+      `${MODULE}.${METHOD}`,
       err.message,
       { stack: err.stack, headers: req.headers, body: req.body, query: req.query, params: req.params },
     );
@@ -24,6 +26,7 @@ async function config(req, res) {
 }
 
 async function scripts(req, res) {
+  const METHOD = 'scripts';
   try {
     // combine scripts to one file and send
     let scripts = [
@@ -47,7 +50,7 @@ async function scripts(req, res) {
     return res.status(200).send(script).end();
   } catch (err) {
     await logger.error(
-      'ScriptsController.config',
+      `${MODULE}.${METHOD}`,
       err.message,
       { stack: err.stack, headers: req.headers, body: req.body, query: req.query, params: req.params },
     );

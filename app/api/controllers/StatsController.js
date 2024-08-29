@@ -2,8 +2,10 @@ const StatsMongoClient = require('../mongo/Stats');
 const LogsMongoClient = require('../mongo/Logs');
 
 const logger = new LogsMongoClient();
+const MODULE = 'StatsController';
 
 async function stats(req, res) {
+  const METHOD = 'stats';
   const Stats = new StatsMongoClient();
   try {
     const results = await Stats.getRedirectCounts();
@@ -11,7 +13,7 @@ async function stats(req, res) {
     return res.status(200).json(results);
   } catch (err) {
     await logger.error(
-      'StatsController.stats', 
+      `${MODULE}.${METHOD}`,
       err.message, 
       { stack: err.stack, headers: req.headers, body: req.body, query: req.query, params: req.params },
     );
@@ -22,6 +24,7 @@ async function stats(req, res) {
 }
 
 async function statsById(req, res) {
+  const METHOD = 'statsById';
   const Stats = new StatsMongoClient();
   try {
 
@@ -31,7 +34,7 @@ async function statsById(req, res) {
     return res.status(200).json(results);
   } catch (err) {
     await logger.error(
-      'StatsController.statsById', 
+      `${MODULE}.${METHOD}`,
       err.message, 
       { stack: err.stack, headers: req.headers, body: req.body, query: req.query, params: req.params },
     );
@@ -42,6 +45,7 @@ async function statsById(req, res) {
 }
 
 async function metrics(req, res) {
+  const METHOD = 'metrics';
   const Stats = new StatsMongoClient();
   try {
     await Stats.connect();
@@ -79,7 +83,7 @@ async function metrics(req, res) {
     
     return res.status(200).end();
   } catch (err) {
-    await logger.error('StatsController.metrics', err.message, { stack: err.stack });
+    await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
     return res.status(500).end();
   } finally {
     await Stats.close();

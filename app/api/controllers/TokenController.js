@@ -5,21 +5,22 @@ const LogsMongoClient = require('../mongo/Logs');
 const randomizer = require('../helpers/randomizer');
 
 const logger = new LogsMongoClient();
-
+const MODULE = 'TokenController';
 
 async function create(req, res, next) {
+  const METHOD = 'create';
   try {
     const Track = new TrackingMongoClient();
 
     if (!config.tokens.create.enabled) {
-      await logger.warn('TokenController.create', 'Token creation is disabled, but request was made.', { headers: req.headers, body: req.body });
+      await logger.warn(`${MODULE}.${METHOD}`, 'Token creation is disabled, but request was made.', { headers: req.headers, body: req.body });
       return res.status(404).end();
     }
 
     const Tokens = new TokensMongoClient();
     let { name } = req.body;
     if (!name) {
-      await logger.debug('TokenController.create', 'Missing required field: name. Generating random name.', { headers: req.headers, body: req.body });
+      await logger.debug(`${MODULE}.${METHOD}`, 'Missing required field: name. Generating random name.', { headers: req.headers, body: req.body });
       name = randomizer.generate(12,12);
     }
     const result = await Tokens.create(name);
@@ -28,10 +29,10 @@ async function create(req, res, next) {
       return res.status(200).json({ id: result.id, name: result.name, token: result.token });
     }
 
-    await logger.error('TokenController.create', 'Unable to generate token', { headers: req.headers, body: req.body });
+    await logger.error(`${MODULE}.${METHOD}`, 'Unable to generate token', { headers: req.headers, body: req.body });
     return res.status(500).json({ error: 'Unable to generate token' });
   } catch (err) {
-    await logger.error('TokenController.create', err, { stack: err.stack, headers: req.headers, body: req.body });
+    await logger.error(`${MODULE}.${METHOD}`, err, { stack: err.stack, headers: req.headers, body: req.body });
     return res.status(500).json({ error: 'An error has occurred' });
   } finally {
     await token.close();
@@ -40,6 +41,7 @@ async function create(req, res, next) {
 }
 
 async function destroy(req, res, next) {
+  const METHOD = 'destroy';
   try {
     if (!config.tokens.create.enabled) {
       return res.status(404).end();
@@ -54,10 +56,10 @@ async function destroy(req, res, next) {
       await Track.create(req, { action: 'token.destroy', token: { id } });
       return res.status(204).end();
     }
-    await logger.warn('TokenController.destroy', 'token not found');
+    await logger.warn(`${MODULE}.${METHOD}`, 'token not found');
     return res.status(404).json({ error: 'token not found' });
   } catch (err) {
-    await logger.error('TokenController.destroy', err, { stack: err.stack });
+    await logger.error(`${MODULE}.${METHOD}`, err, { stack: err.stack });
     return res.status(500).json({ error: 'An error has occurred' });
   } finally {
     await Tokens.close();
@@ -66,6 +68,7 @@ async function destroy(req, res, next) {
 }
 
 async function grantScope(req, res, next) {
+  const METHOD = 'grantScope';
   try {
     const Track = new TrackingMongoClient();
     const Tokens = new TokensMongoClient();
@@ -94,7 +97,7 @@ async function grantScope(req, res, next) {
 
     return res.status(500).json({ error: 'Unable to grant scope.' });
   } catch (err) {
-    await logger.error('TokenController.grantScope', err, { stack: err.stack });
+    await logger.error(`${MODULE}.${METHOD}`, err, { stack: err.stack });
     return res.status(500).json({ error: 'An error has occurred' });
   } finally {
     await Tokens.close();
@@ -103,6 +106,7 @@ async function grantScope(req, res, next) {
 }
 
 async function revokeScope(req, res, next) {
+  const METHOD = 'revokeScope';
   try {
     const Track = new TrackingMongoClient();
     const Tokens = new TokensMongoClient();
@@ -132,7 +136,7 @@ async function revokeScope(req, res, next) {
 
     return res.status(500).json({ error: 'Unable to revoke scope.' });
   } catch (err) {
-    await logger.error('TokenController.revokeScope', err, { stack: err.stack });
+    await logger.error(`${MODULE}.${METHOD}`, err, { stack: err.stack });
     return res.status(500).json({ error: 'An error has occurred' });
   } finally {
     await Tokens.close();
