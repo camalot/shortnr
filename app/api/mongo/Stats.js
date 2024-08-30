@@ -1,12 +1,10 @@
-// const { MongoClient, ObjectId } = require('mongodb');
 const DatabaseMongoClient = require('./Database');
-const config = require('../../config/env');
 const LogsMongoClient = require('./Logs');
 
 const logger = new LogsMongoClient();
 const MODULE = 'StatsMongoClient';
 
-class StatsMongoClient extends DatabaseMongoClient { 
+class StatsMongoClient extends DatabaseMongoClient {
   constructor() {
     super();
     this.tokens = 'tokens';
@@ -19,7 +17,7 @@ class StatsMongoClient extends DatabaseMongoClient {
     const METHOD = 'getRedirectCountsForShort';
     try {
       return this.getTrackingCountsByMatch([
-        { $match: { id, action: 'url.redirect' } }, 
+        { $match: { id, action: 'url.redirect' } },
         { $group: { _id: '$id', total: { $sum: 1 } } },
       ]);
     } catch (err) {
@@ -31,9 +29,9 @@ class StatsMongoClient extends DatabaseMongoClient {
   async getRedirectCounts() {
     const METHOD = 'getRedirectCounts';
     try {
-      return this.getTrackingCountsByMatch([ 
+      return this.getTrackingCountsByMatch([
         { $match: { action: 'url.redirect' } },
-        { $group: { _id: { id: '$id', token_id: { '$ifNull': ['$created_by', 'anonymous'] } }, total: { $sum: 1 } } }
+        { $group: { _id: { id: '$id', token_id: { $ifNull: [ '$created_by', 'anonymous' ] } }, total: { $sum: 1 } } },
       ]);
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
@@ -45,8 +43,8 @@ class StatsMongoClient extends DatabaseMongoClient {
     const METHOD = 'getShortenCounts';
     try {
       return this.getTrackingCountsByMatch([
-        { $match: { action: 'url.shorten', "new": true } },
-        { $group: { _id: { token_id: { '$ifNull': [ '$created_by', 'anonymous' ] } }, total: { $sum: 1 } } },
+        { $match: { action: 'url.shorten', new: true } },
+        { $group: { _id: { token_id: { $ifNull: [ '$created_by', 'anonymous' ] } }, total: { $sum: 1 } } },
       ]);
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
@@ -59,7 +57,7 @@ class StatsMongoClient extends DatabaseMongoClient {
     try {
       await this.connect();
       const collection = this.db.collection(this.logs);
-      const logLevels = ['FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG'];
+      const logLevels = [ 'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', ];
       const results = [];
       for (const level of logLevels) {
         const result = await collection.countDocuments({ level });
@@ -78,7 +76,7 @@ class StatsMongoClient extends DatabaseMongoClient {
       await this.connect();
       const collection = this.db.collection(this.tokens);
       const results = await collection.aggregate([
-        { $group: { _id: { '$ifNull': [ '$enabled', false ] }, total: { $sum: 1 } } }
+        { $group: { _id: { $ifNull: [ '$enabled', false ] }, total: { $sum: 1 } } },
       ]).toArray();
       return results;
     } catch (err) {

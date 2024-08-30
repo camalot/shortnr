@@ -22,7 +22,7 @@ async function blocked(req, res, next) {
   try {
     const targetUrl = req.body.url.replace(/\/$/, '');
     const blockedHosts = config.short.blocked.hosts;
-    const blockedProtocols = config.short.blocked.protocols.map(p => p.replace(':', ''));
+    const blockedProtocols = config.short.blocked.protocols.map((p) => p.replace(':', ''));
 
     // Check if the targetUrl is in the blockedHosts list
     // get the protocol and host from the targetUrl
@@ -42,10 +42,6 @@ async function blocked(req, res, next) {
     const domainPort = splits[1].replace(/^\/\//gi, '').split('/')[0];
     const hostParts = domainPort.split(':');
     const host = hostParts[0];
-    let port = null;
-    if (hostParts.length > 1) {
-      port = hostParts[1];
-    }
 
     if (blockedProtocols.includes(protocol) || blockedHosts.includes(host)) {
       await logger.warn(`${MODULE}.${METHOD}`, `Blocked request to ${targetUrl}`);
@@ -59,7 +55,7 @@ async function blocked(req, res, next) {
 }
 
 async function scope(req, res, next) {
-  let activeRoute = req.route.path;
+  const activeRoute = req.route.path;
 
   if (!res.locals[activeRoute]) {
     res.locals[activeRoute] = {};
@@ -97,6 +93,6 @@ async function scope(req, res, next) {
   return next();
 }
 
-module.exports = { 
+module.exports = {
   scope, blocked,
 };

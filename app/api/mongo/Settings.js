@@ -17,7 +17,7 @@ class SettingsMongoClient extends DatabaseMongoClient {
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
-      const result = await collection.findOne({name: key});
+      const result = await collection.findOne({ name: key });
       return result ? result.value : defaultValue;
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
@@ -30,7 +30,7 @@ class SettingsMongoClient extends DatabaseMongoClient {
     try {
       await this.connect();
       const collection = this.db.collection(this.collection);
-      const result = await collection.updateOne({name: key}, { $set: {value} }, {upsert: true});
+      const result = await collection.updateOne({ name: key }, { $set: {value} }, {upsert: true});
       return result;
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
@@ -39,7 +39,8 @@ class SettingsMongoClient extends DatabaseMongoClient {
   }
 
   async save() {
-
+    throw new Error('Not implemented');
   }
-
 }
+
+module.exports = SettingsMongoClient;

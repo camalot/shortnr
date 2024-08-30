@@ -1,5 +1,4 @@
 const requests = require('../helpers/requests');
-const config = require('../../config');
 const UrlsMongoClient = require('../mongo/Urls');
 const TrackingMongoClient = require('../mongo/Tracking');
 const LogsMongoClient = require('../mongo/Logs');

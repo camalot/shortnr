@@ -1,4 +1,4 @@
-const { /*MongoClient,*/ ObjectId } = require('mongodb');
+const { ObjectId } = require('mongodb');
 const DatabaseMongoClient = require('./Database');
 const config = require('../../config');
 const randomizer = require('../helpers/randomizer');
@@ -78,7 +78,7 @@ class TokensMongoClient extends DatabaseMongoClient {
         scopes: [
           'url.create',
           'token.delete',
-          'token.enable', 
+          'token.enable',
           'stats.read',
         ],
         created_at: timestamp,
@@ -87,7 +87,7 @@ class TokensMongoClient extends DatabaseMongoClient {
         // update the scopes to add token.delete.:token_id
         await collection.updateOne(
           { _id: result.insertedId }, 
-          { $push: { scopes: `token.delete.${result.insertedId.toString()}` } }
+          { $push: { scopes: `token.delete.${result.insertedId.toString()}` } },
         );
         return { id: result.insertedId.toString(), token, name };
       }

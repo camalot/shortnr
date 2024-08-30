@@ -19,7 +19,7 @@ async function registerScopes(req, res, route, method, scopes) {
 }
 
 async function scope(req, res, next) {
-  let activeRoute = req.route.path;
+  const activeRoute = req.route.path;
 
   if (!res.locals[activeRoute]) {
     res.locals[activeRoute] = {};
@@ -46,7 +46,7 @@ async function scope(req, res, next) {
     case '/api/token/:id':
       method = 'delete';
       scopes = ['token.delete'];
-      
+
       // // get the id from the route
       // let token_id = req.params.id || req.query.id;
       // if (token_id) {
@@ -91,7 +91,7 @@ async function verify(req, res, next) {
   await logger.debug(`${MODULE}.${METHOD}`, 'Verifying token.');
   let accessToken = req.headers['x-access-token'];
   if (!accessToken) {
-    const authorization = req.headers['authorization'];
+    const authorization = req.headers.authorization;
     if (authorization) {
       const parts = authorization.split(' ');
       if (parts.length === 2 && parts[0] === 'Bearer') {
@@ -132,15 +132,14 @@ async function verify(req, res, next) {
   res.locals.token = token;
 
   const valid = await Tokens.valid(token.token);
-  let missingScopes = [];
+  const missingScopes = [];
   if (requiredScopes && requiredScopes.length > 0) {
     for (let i = 0; i < requiredScopes.length; i += 1) {
-      let scope = requiredScopes[i];
-
-      let hasScope = await Tokens.hasScope(token.token, scope);
+      const current = requiredScopes[i];
+      const hasScope = Tokens.hasScope(token.token, current);
       if (!hasScope) {
-        await logger.debug(`${MODULE}.${METHOD}`, `Token does not have required scope: ${scope}`);
-        missingScopes.push(scope);
+        logger.debug(`${MODULE}.${METHOD}`, `Token does not have required scope: ${current}`);
+        missingScopes.push(current);
       }
     }
 

@@ -10,11 +10,28 @@ ignorePatterns:
 
 parser: '@typescript-eslint/parser'
 
+parserOptions:
+  ecmaVersion: latest
+  sourceType: module
+  ecmaFeatures:
+    jsx: false
+
 plugins:
+  - '@stylistic/js'
   - '@typescript-eslint'
+  - promise
+  - import
+  - prefer-arrow-functions
+
+globals:
+  document: readonly
+  navigator: readonly
+  window: readonly
+
+rules:
+  no-restricted-syntax: off
 
 overrides:
-
   # JSON files
   - files:
       - "*.json"

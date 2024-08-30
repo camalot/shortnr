@@ -26,6 +26,8 @@ async function scope(req, res, next) {
   }
 
   // loop all methods for the route
+  // disable eslint for this line
+  // 
   for (const m in req.route.methods) {
     if (req.route.methods[m]) {
       if (!res.locals[activeRoute][m.toLowerCase()]) {
@@ -44,9 +46,7 @@ async function scope(req, res, next) {
       if (config.metrics.tokenRequired && config.tokens.required) {
         await logger.debug(`${MODULE}.${METHOD}`, 'Token and stats required');
         scopes = ['stats.read'];
-      } 
-
-      scopes = scopes;
+      }
       method = 'get';
       await registerScopes(req, res, activeRoute, method, scopes);
       break;
@@ -58,5 +58,5 @@ async function scope(req, res, next) {
 }
 
 module.exports = {
-  scope
+  scope,
 };
