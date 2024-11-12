@@ -17,7 +17,7 @@ parserOptions:
     jsx: false
 
 plugins:
-  - '@stylistic/js'
+  # - '@stylistic/js'
   - '@typescript-eslint'
   - promise
   - import

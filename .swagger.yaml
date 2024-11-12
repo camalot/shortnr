@@ -1,0 +1,343 @@
+openapi: 3.0.1
+info:
+  title: Shortnr
+  description: ""
+  version: 1.0.0
+servers:
+  - url: '{protocol}://{host}' # NODE RED
+    variables:
+      protocol:
+        enum:
+          - http
+          - https
+        default: http
+      host:
+        default: s.bit13.local
+paths:
+  '/api/shorten':
+    post:
+      summary: Shorten URL
+      security:
+        - X-ACCESS-TOKEN: []
+      
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                url:
+                  type: string
+                  example: "https://www.google.com"
+              required: 
+                - url
+      responses:
+        '200':
+          description: Shorten URL
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortResponse'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  '/api/stats': 
+    get:
+      summary: Get all stats
+      security:
+        - X-ACCESS-TOKEN: []
+      responses:
+        '200':
+          description: Stats
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/ShortenStat'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  '/api/stats/{short}':
+    get:
+      summary: Get stats for individual short
+      security:
+        - X-ACCESS-TOKEN: []
+      parameters:
+        - in: path
+          name: short
+          required: true
+          schema:
+            type: string
+      responses:
+        '200':
+          description: Stats
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ShortenStat'
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '403':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  '/api/token': 
+    post:
+      summary: Create Token
+      security:
+        - X-ACCESS-TOKEN: []
+      responses:
+        '200':
+          description: Successfully Created Token
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TokenCreate'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/api/token/{id}': 
+    delete:
+      summary: Delete Token
+      security:
+        - X-ACCESS-TOKEN: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      responses:
+        '204':
+          description: Successfully Deleted Token
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  '/api/token/scope/{id}': 
+    post:
+      summary: Grant Scope to Token
+      security:
+        - X-ACCESS-TOKEN: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scope:
+                  type: string
+                  example: "shorten"
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                  example: ["shorten", "stats"]
+      responses:
+        '204':
+          description: Successfully Granted Scope
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+    delete:
+      summary: Revoke Scope from Token
+      security:
+        - X-ACCESS-TOKEN: []
+      parameters:
+        - in: path
+          name: id
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                scope:
+                  type: string
+                  example: "shorten"
+                scopes:
+                  type: array
+                  items:
+                    type: string
+                  example: ["shorten", "stats"]
+      responses:
+        '204':
+          description: Successfully Revoked Scope
+        '400':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '404':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          description: Error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+  
+  # Not currently implemented
+  # '/api/token/enable/{id}': {}
+  # '/api/token/disable/{id}': {}
+
+components:
+  schemas: 
+    TokenCreate:
+      type: object
+      properties:
+        id:
+          type: string
+        name:
+          type: string
+        token:
+          type: string
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+    ShortenStat:
+      type: object
+      properties:
+        _id:
+          type: object
+          properties:
+            id:
+              type: string
+            token_id:
+              type: string
+        total:
+          type: number
+    ShortResponse:
+      type: object
+      properties:
+        id:
+          type: string
+        target:
+          type: string
+        url:
+          type: string
+        urls:
+          type: array
+          items:
+            type: string
+        new:
+          type: boolean
+        created_by:
+          type: string
+    
+  securitySchemes:
+    X-ACCESS-TOKEN:
+      type: apiKey
+      in: header
+      name: X-ACCESS-TOKEN
+security:
+  - X-ACCESS-TOKEN: []
