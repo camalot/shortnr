@@ -36,6 +36,8 @@ class TokensMongoClient extends DatabaseMongoClient {
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return false;
+    } finally {
+      await this.close();
     }
   }
 
@@ -57,6 +59,8 @@ class TokensMongoClient extends DatabaseMongoClient {
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return false;
+    } finally {
+      await this.close();
     }
   }
 
@@ -95,6 +99,8 @@ class TokensMongoClient extends DatabaseMongoClient {
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
+    } finally {
+      await this.close();
     }
   }
 
@@ -113,6 +119,8 @@ class TokensMongoClient extends DatabaseMongoClient {
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return false;
+    } finally {
+      await this.close();
     }
   }
 
@@ -154,6 +162,8 @@ class TokensMongoClient extends DatabaseMongoClient {
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
+    } finally {
+      await this.close();
     }
   }
 
@@ -194,6 +204,8 @@ class TokensMongoClient extends DatabaseMongoClient {
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
+    } finally {
+      await this.close();
     }
   }
 
@@ -215,6 +227,8 @@ class TokensMongoClient extends DatabaseMongoClient {
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
+    } finally {
+      await this.close();
     }
   }
 
@@ -233,6 +247,8 @@ class TokensMongoClient extends DatabaseMongoClient {
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
+    } finally {
+      await this.close();
     }
   }
 }
