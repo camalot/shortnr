@@ -8,7 +8,9 @@ COPY ./app /app
 WORKDIR /app
 
 # install the dependencies
-RUN npm install --omit=dev
+RUN apk add --no-cache curl && npm install --omit=dev
+
+HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 CMD [ "curl", "-f", "http://127.0.0.1:3000/healthz" ]
 
 EXPOSE 3000
 
