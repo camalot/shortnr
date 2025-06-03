@@ -235,6 +235,7 @@ class TokensMongoClient extends DatabaseMongoClient {
   async findOne(query) {
     const METHOD = 'findOne';
     try {
+      await this.connect();
       const collection = this.db.collection(this.collection);
       const result = await collection.findOne(query);
       if (result) {
