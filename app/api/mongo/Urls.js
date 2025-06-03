@@ -93,7 +93,6 @@ class UrlsMongoClient extends DatabaseMongoClient {
   async findOne(query) {
     const METHOD = 'findOne';
     try {
-      await this.connect();
       const collection = this.db.collection(this.collection);
       const result = await collection.findOne(query);
       if (!result) {
@@ -104,8 +103,6 @@ class UrlsMongoClient extends DatabaseMongoClient {
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
-    } finally {
-      await this.close();
     }
   }
 }
