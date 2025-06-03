@@ -23,8 +23,6 @@ class StatsMongoClient extends DatabaseMongoClient {
     } catch (err) {
       logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
-    } finally {
-      await this.close();
     }
   }
 
@@ -38,14 +36,13 @@ class StatsMongoClient extends DatabaseMongoClient {
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
-    } finally {
-      await this.close();
     }
   }
 
   async getShortenCounts() {
     const METHOD = 'getShortenCounts';
     try {
+
       return this.getTrackingCountsByMatch([
         { $match: { action: 'url.shorten', new: true } },
         { $group: { _id: { token_id: { $ifNull: [ '$created_by', 'anonymous' ] } }, total: { $sum: 1 } } },
@@ -53,8 +50,6 @@ class StatsMongoClient extends DatabaseMongoClient {
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
-    } finally {
-      await this.close();
     }
   }
 
