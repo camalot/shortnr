@@ -71,7 +71,7 @@ class UrlsMongoClient extends DatabaseMongoClient {
         await logger.debug(`${MODULE}.${METHOD}`, 'id is not unique, generating new id');
         id = randomizer.generate(min, max);
       };
-
+      await this.connect();
       const result = await collection.insertOne({
         id,
         target_url,
