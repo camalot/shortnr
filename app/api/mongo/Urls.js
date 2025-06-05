@@ -31,8 +31,6 @@ class UrlsMongoClient extends DatabaseMongoClient {
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
-    } finally {
-      await this.close();
     }
   }
 
@@ -85,8 +83,6 @@ class UrlsMongoClient extends DatabaseMongoClient {
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
       return null;
-    } finally {
-      await this.close();
     }
   }
 

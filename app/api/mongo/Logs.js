@@ -110,8 +110,6 @@ class LogsMongoClient extends DatabaseMongoClient {
     } catch (err) {
       this._consoleWriter('FATAL', 'LogsMongoClient.write', err.message, { stack: err.stack });
       return false;
-    } finally {
-      await this.close();
     }
   }
 

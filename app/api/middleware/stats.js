@@ -13,7 +13,7 @@ async function registerScopes(req, res, route, method, scopes) {
     res.locals[route][method.toLowerCase()] = {};
   }
 
-  await logger.debug(`${MODULE}.${METHOD}`, `Registering scopes: ${JSON.stringify(scopes)} for ${route}}:${method.toUpperCase()}`);
+  await logger.debug(`${MODULE}.${METHOD}`, `Registering scopes: ${JSON.stringify(scopes)} for ${route}:${method.toUpperCase()}`);
   res.locals[route][method].scopes = scopes;
 }
 
