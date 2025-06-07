@@ -56,7 +56,9 @@ class StatsMongoClient extends DatabaseMongoClient {
   async getLogCounts() {
     const METHOD = 'getLogCounts';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      }
       const collection = this.db.collection(this.logs);
       const logLevels = [ 'FATAL', 'ERROR', 'WARN', 'INFO', 'DEBUG', ];
       const results = [];
@@ -74,7 +76,9 @@ class StatsMongoClient extends DatabaseMongoClient {
   async getTokenCounts() {
     const METHOD = 'getTokenCounts';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       const collection = this.db.collection(this.tokens);
       const results = await collection.aggregate([
         { $group: { _id: { $ifNull: [ '$enabled', false ] }, total: { $sum: 1 } } },
@@ -89,7 +93,9 @@ class StatsMongoClient extends DatabaseMongoClient {
   async getTrackingCounts() {
     const METHOD = 'getTrackingCounts';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       const collection = this.db.collection(this.tracking);
       const results = await collection.aggregate([
         { $sort: { action: 1 } },
@@ -104,7 +110,9 @@ class StatsMongoClient extends DatabaseMongoClient {
 
   async getTrackingCountsByMatch(pipeline, options) {
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       const collection = this.db.collection(this.tracking);
       const result = await collection.aggregate(pipeline, options).toArray();
       return result;

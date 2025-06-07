@@ -80,7 +80,9 @@ class LogsMongoClient extends DatabaseMongoClient {
 
   async write(level, source, message, data) {
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       const timestamp = Math.floor(Date.now() / 1000);
       const collection = this.db.collection(this.collection);
       const dbLogLevel = this._logLevels()[config.log.level.db];

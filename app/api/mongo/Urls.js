@@ -17,7 +17,9 @@ class UrlsMongoClient extends DatabaseMongoClient {
   async get(id) {
     const METHOD = 'get';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       const collection = this.db.collection(this.collection);
       if (id) {
         const result = collection.findOne({ id });
@@ -37,7 +39,9 @@ class UrlsMongoClient extends DatabaseMongoClient {
   async create(url, tokenId) {
     const METHOD = 'create';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       // let tokenId = null;
       // if (token) {
       //   const tokenClient = new TokensMongoClient();
@@ -89,7 +93,9 @@ class UrlsMongoClient extends DatabaseMongoClient {
   async findOne(query) {
     const METHOD = 'findOne';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
 
       const collection = this.db.collection(this.collection);
       const result = await collection.findOne(query);

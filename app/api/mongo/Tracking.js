@@ -16,7 +16,9 @@ class TrackingMongoClient extends DatabaseMongoClient {
   async create(req, payload) {
     const METHOD = 'create';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       if (req) {
         delete payload._id;
 

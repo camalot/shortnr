@@ -35,7 +35,7 @@ async function create(req, res, next) {
     await logger.error(`${MODULE}.${METHOD}`, err, { stack: err.stack, headers: req.headers, body: req.body });
     return res.status(500).json({ error: 'An error has occurred' });
   } finally {
-    await token.close();
+    await Tokens.close();
     await Track.close();
   }
 }

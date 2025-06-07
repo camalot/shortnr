@@ -15,7 +15,9 @@ class SettingsMongoClient extends DatabaseMongoClient {
   async get(key, defaultValue) {
     const METHOD = 'get';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       const collection = this.db.collection(this.collection);
       const result = await collection.findOne({ name: key });
       return result ? result.value : defaultValue;
@@ -28,7 +30,9 @@ class SettingsMongoClient extends DatabaseMongoClient {
   async set(key, value) {
     const METHOD = 'set';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       const collection = this.db.collection(this.collection);
       const result = await collection.updateOne({ name: key }, { $set: {value} }, {upsert: true});
       return result;

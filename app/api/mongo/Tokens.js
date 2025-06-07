@@ -20,8 +20,10 @@ class TokensMongoClient extends DatabaseMongoClient {
         await logger.debug(`${MODULE}.${METHOD}`, 'Token not required: returning true');
         return true;
       }
+      if (!this.db) {
+        await this.connect();
+      } 
       await logger.debug(`${MODULE}.${METHOD}`, 'Token required: checking token');
-      await this.connect();
       if (token) {
         const result = await this.findOne({ token });
         await logger.debug(`${MODULE}.${METHOD}`, 'FindOne result', { result });
@@ -42,7 +44,9 @@ class TokensMongoClient extends DatabaseMongoClient {
   async destroy(id, token) {
     const METHOD = 'destroy';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       const collection = this.db.collection(this.collection);
       if (id) {
         const oid = ObjectId.createFromHexString(id);
@@ -63,7 +67,9 @@ class TokensMongoClient extends DatabaseMongoClient {
   async create(name) {
     const METHOD = 'create';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       const collection = this.db.collection(this.collection);
       const timestamp = Math.floor(Date.now() / 1000);
       if (!name) {
@@ -101,7 +107,9 @@ class TokensMongoClient extends DatabaseMongoClient {
   async hasScope(token, scope) {
     const METHOD = 'hasScope';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       const collection = this.db.collection(this.collection);
       const result = await collection.findOne({ token });
       if (result) {
@@ -119,7 +127,9 @@ class TokensMongoClient extends DatabaseMongoClient {
   async grantScope(token, scopes) {
     const METHOD = 'grantScope';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       const collection = this.db.collection(this.collection);
 
       const tokenResult = this.findOne({ token });
@@ -160,7 +170,9 @@ class TokensMongoClient extends DatabaseMongoClient {
   async revokeScope(token, scopes) {
     const METHOD = 'revokeScope';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       const collection = this.db.collection(this.collection);
 
       const tokenResult = this.findOne({ token });
@@ -200,8 +212,10 @@ class TokensMongoClient extends DatabaseMongoClient {
   async get(id) {
     const METHOD = 'get';
     try {
-      await this.connect();
-      const collection = this.db.collection(this.collection);
+      if (!this.db) {
+        await this.connect();
+      } 
+      // const collection = this.db.collection(this.collection);
       if (id) {
         const objectId = ObjectId.createFromHexString(id);
         const result = this.findOne({ _id: objectId });
@@ -221,7 +235,9 @@ class TokensMongoClient extends DatabaseMongoClient {
   async findOne(query) {
     const METHOD = 'findOne';
     try {
-      await this.connect();
+      if (!this.db) {
+        await this.connect();
+      } 
       const collection = this.db.collection(this.collection);
       const result = await collection.findOne(query);
       if (result) {
