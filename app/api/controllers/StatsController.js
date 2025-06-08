@@ -18,8 +18,6 @@ async function stats(req, res) {
       { stack: err.stack, headers: req.headers, body: req.body, query: req.query, params: req.params },
     );
     return res.status(500).end();
-  } finally {
-    await Stats.close();
   }
 }
 
@@ -39,8 +37,6 @@ async function statsById(req, res) {
       { stack: err.stack, headers: req.headers, body: req.body, query: req.query, params: req.params },
     );
     return res.status(500).end();
-  } finally {
-    await Stats.close();
   }
 }
 
@@ -85,8 +81,6 @@ async function metrics(req, res) {
   } catch (err) {
     await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
     return res.status(500).end();
-  } finally {
-    await Stats.close();
   }
 }
 

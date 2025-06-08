@@ -34,9 +34,6 @@ async function create(req, res, next) {
   } catch (err) {
     await logger.error(`${MODULE}.${METHOD}`, err, { stack: err.stack, headers: req.headers, body: req.body });
     return res.status(500).json({ error: 'An error has occurred' });
-  } finally {
-    await Tokens.close();
-    await Track.close();
   }
 }
 
@@ -61,9 +58,6 @@ async function destroy(req, res, next) {
   } catch (err) {
     await logger.error(`${MODULE}.${METHOD}`, err, { stack: err.stack });
     return res.status(500).json({ error: 'An error has occurred' });
-  } finally {
-    await Tokens.close();
-    await Track.close();
   }
 }
 
@@ -99,9 +93,6 @@ async function grantScope(req, res, next) {
   } catch (err) {
     await logger.error(`${MODULE}.${METHOD}`, err, { stack: err.stack });
     return res.status(500).json({ error: 'An error has occurred' });
-  } finally {
-    await Tokens.close();
-    await Track.close();
   }
 }
 
@@ -130,7 +121,6 @@ async function revokeScope(req, res, next) {
     const result = await Tokens.revokeScope(id, scopes);
     if (result) {
       await Track.create(req, { action: 'token.scopes.revoke', token: { id, scope } });
-      await Track.close();
       return res.status(204).end();
     }
 
@@ -138,8 +128,6 @@ async function revokeScope(req, res, next) {
   } catch (err) {
     await logger.error(`${MODULE}.${METHOD}`, err, { stack: err.stack });
     return res.status(500).json({ error: 'An error has occurred' });
-  } finally {
-    await Tokens.close();
   }
 }
 

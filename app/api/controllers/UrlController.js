@@ -51,8 +51,6 @@ async function redirect(req, res) {
   }
 
   await logger.warn(`${MODULE}.${METHOD}`, `Short url not found: ${id}`);
-  await Url.close();
-  await Tracking.close();
   return res.status(404).end();
 }
 
@@ -77,7 +75,6 @@ async function createShortResponse(req, res, short, isNew) {
   await logger.debug(`${MODULE}.${METHOD}`, JSON.stringify(output));
   await Tracking.create(req, { action: 'url.shorten', ...output });
   delete output.created_by;
-  await Tracking.close();
   return res.status(200).json(output);
 }
 
