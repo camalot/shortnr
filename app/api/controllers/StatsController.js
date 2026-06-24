@@ -63,6 +63,7 @@ async function metrics(req, res) {
       metrics.push(toPrometheusMetricValue('nus', 'logs', { level: log.level }, log.total));
     });
 
+    // 
     await trackings.forEach(async (tracking) => {
       metrics.push(toPrometheusMetricValue('nus', 'action', { action: tracking._id }, tracking.total));
     });

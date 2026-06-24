@@ -22,7 +22,7 @@ class StatsMongoClient extends DatabaseMongoClient {
       ]);
     } catch (err) {
       logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
-      return null;
+      return [];
     }
   }
 
@@ -35,7 +35,7 @@ class StatsMongoClient extends DatabaseMongoClient {
       ]);
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
-      return null;
+      return [];
     }
   }
 
@@ -49,7 +49,7 @@ class StatsMongoClient extends DatabaseMongoClient {
       ]);
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
-      return null;
+      return [];
     }
   }
 
@@ -69,7 +69,7 @@ class StatsMongoClient extends DatabaseMongoClient {
       return results;
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
-      return null;
+      return [];
     }
   }
 
@@ -86,7 +86,7 @@ class StatsMongoClient extends DatabaseMongoClient {
       return results;
     } catch (err) {
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
-      return null;
+      return [];
     }
   }
 
@@ -103,8 +103,9 @@ class StatsMongoClient extends DatabaseMongoClient {
       ]).toArray();
       return results;
     } catch (err) {
+      console.error(err);
       await logger.error(`${MODULE}.${METHOD}`, err.message, { stack: err.stack });
-      return null;
+      return [];
     }
   }
 
